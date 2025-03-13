@@ -25,7 +25,7 @@ list(
   # prepare data ----
   tar_target(
     name = datafile,
-    command = here("_raw", "BNT_COSACTIW_DATA_Klara_final_pro_statistiku_označené_sloupce_zbytek_statistiky.xlsx"),
+    command = here("_raw", "COSACTIW_DATA_Klara_final.xlsx"),
     format = "file"
   ),
   tar_target(

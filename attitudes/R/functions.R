@@ -80,6 +80,7 @@ list_outcomes <- function() data.frame(
     "MMSE",
     "Waist_circumference",
     "BMI",
+    "BRI",
     "GDS15",
     "GAI",
     paste0( "Chair_stand", c("","_z", "_level") ),
@@ -101,6 +102,7 @@ list_outcomes <- function() data.frame(
     "MMSE (range 0-30)",
     "Waist circumference (cm)",
     "BMI (kg/m^2)",
+    "BRI (???)",
     "GDS-15 (range 0-15)",
     "GAI (range 0- 20)",
     paste("Chair Stand", c("(# in 30 sec)", "(z-score)", "normative value"), sep = " "),
@@ -117,13 +119,13 @@ list_outcomes <- function() data.frame(
   ),
   
   role = c(
-    rep("descriptor", 7),
+    rep("descriptor", 8),
     rep("primary outcome", 13),
     rep("secondary outcome", 6)
   ),
   
   type = c(
-    rep("continuous", 7),
+    rep("continuous", 8),
     rep(c(rep("continuous", 2), "categorical"), 4),
     rep("continuous", 7)
   )
@@ -161,7 +163,7 @@ import_data <- function(file) read.xlsx(
   select(
     
     ID, PA_att, # identification and group (predictor) variables
-    Age, MMSE, Education, Waist_circumference, BMI, GDS15, GAI, # descriptive variables
+    Age, MMSE, Education, Waist_circumference, BMI, GDS15, GAI, BRI, # descriptive variables
     
     # primary outcomes (SFT)
     starts_with("Chair_stand"),
