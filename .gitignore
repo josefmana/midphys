@@ -10,9 +10,8 @@ models/**/*.rds
 **/*.fff
 **/*.log
 Rplots.pdf
-
-# ignore all _* folders
-_*/
+data-raw/
+docs/
 
 # History files
 .Rprofile
@@ -64,3 +63,4 @@ po/*~
 
 # RStudio Connect folder
 rsconnect/
+.Rproj.user

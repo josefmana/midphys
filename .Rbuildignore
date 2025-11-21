@@ -1,0 +1,7 @@
+^midphys\.Rproj$
+^\.Rproj\.user$
+^LICENSE\.md$
+
+^data-raw$
+^_targets.R$
+^_targets.yaml$

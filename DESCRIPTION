@@ -1,0 +1,36 @@
+Package: midphys
+Title: Midlife Physical Activity as Predictor of Later-life Cognition
+Version: 0.0.0.9000
+Authors@R: 
+    person(given = "Josef",
+        family = "Mana",
+        email = "josef.mana@protonmail.com",
+        role = c("aut", "cre"),
+        comment = c(ORCID = "0000-0002-7817-3978"))
+Description: Using data collected during NANOK normative and COSACTIW retrospective
+    cross-sectional study, estimates ATE of sustained midlife-to-later-life vigorous
+    physical activity on cognition, functional independence, and mental health.
+License: MIT + file LICENSE
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.2
+Imports:
+    here,
+    dplyr,
+    stringr,
+    ggdag,
+    ggplot2,
+    tibble,
+    xlsx,
+    tidyselect,
+    readr,
+    readxl,
+    tidyr,
+    purrr,
+    rlang,
+    performance,
+    emmeans,
+    ggtext,
+    ggpubr
+Suggests: 
+    rmarkdown
