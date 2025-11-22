@@ -52,16 +52,18 @@ fit_models <- function(
       nm = with(model_specs, paste0(outcome," ~ ",exposure," | ",moderator))
     )
     lapply(labs, function(i) {
-      with(model_specs, glm(
-        formula = as.formula(formula[i]),
-        family = likelihood[i],
-        data = data,
-        weights = unlist(ifelse(
-          outcome[i] == "FAQ" & likelihood[i] == "binomial",
-          yes = list(rep(10, nrow(data))),
-          no = list(NULL)
-        ))
-      ))
+      with(model_specs, {
+        if (likelihood[i] == "gaussian") {
+          lm(as.formula(formula[i]), data)
+        } else {
+          w <- unlist(ifelse(
+            outcome[i] == "FAQ" & likelihood[i] == "binomial",
+            yes = list(rep(10, nrow(data))),
+            no = list(NULL)
+          ))
+          glm(as.formula(formula[i]), likelihood[i], data, weights = w)
+        }
+      })
     })
   })
 }

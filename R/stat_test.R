@@ -25,6 +25,24 @@ stat_test <- function(fits, specs, sets) {
   comp <- lapply(rlang::set_names(names(emm)), function(i) {
     compare_means(emm[[i]], subset(specs, estimate == i))
   })
+  # Do residual checks:
+  check <- lapply(rlang::set_names(names(fits)), function(i) {
+    purrr::map_dbl(rlang::set_names(names(fits[[i]])), function(j) {
+      performance::check_residuals(fits[[i]][[j]]) |>
+        as.numeric()
+    }) |>
+      tibble::enframe(name = "fit", value = "p_residual_check") |>
+      tidyr::separate(
+        fit,
+        into = c("y", "x", "m"),
+        sep = "\\s*~\\s*|\\s*\\|\\s*",
+        remove = TRUE,
+        convert = TRUE
+      ) |>
+      dplyr::mutate(residual_check = dplyr::if_else(
+        p_residual_check < .05, "!", ""
+      ))
+  })
   # Make tables:
   lapply(rlang::set_names(names(fits)), function(t) {
     lapply(rlang::set_names(unique(est[[t]]$x)), function(i) {
@@ -32,6 +50,7 @@ stat_test <- function(fits, specs, sets) {
         dplyr::filter(x == i) |>
         tidyr::pivot_wider(values_from = Est, names_from = group, names_prefix = paste0(i, " = ")) |>
         dplyr::left_join(comp[[t]], by = dplyr::join_by(x, y, m, mod)) |>
+        dplyr::left_join(check[[t]], by = dplyr::join_by(x, y, m)) |>
         dplyr::mutate(
           Variable = factor(
             sapply(seq_len(dplyr::n()), function(i) {
