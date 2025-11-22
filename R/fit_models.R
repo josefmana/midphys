@@ -1,10 +1,10 @@
 #' Fit regression models
-#' 
+#'
 #' Using table of adjustments derived via
 #' \code{adjustment_table}, this function
 #' prepares model specifications for later
 #' fitting.
-#' 
+#'
 #' @param data Tibble or data.frame.
 #' @param specs Tibble or data.frame.
 #' @param log_1 Character. Which variables `y` should be
@@ -12,9 +12,9 @@
 #'   `c("GDS15","GAI")`.
 #' @param contr Logical. Set sum contrasts to factors to
 #'   avoid multicollinearity? Defaults to `TRUE`.
-#' 
+#'
 #' @return A named nested list with regression models.
-#' 
+#'
 #' @export
 fit_models <- function(
     data,
@@ -31,13 +31,13 @@ fit_models <- function(
   }
   # Optionally set orthogonal contrasts:
   if (contr) {
-    for(i in names(data)) {
+    for (i in names(data)) {
       if (is.factor(data[, i])) {
         contrasts(data[, i]) <- contr.sum(length(levels(data[, i])))
       }
     }
   }
-  # Optionally mutate FAQ: 
+  # Optionally mutate FAQ:
   if (c(unique(specs[specs$outcome == "FAQ", "likelihood"])) == "binomial") {
     data$FAQ <- data$FAQ / 10
   }
@@ -48,11 +48,11 @@ fit_models <- function(
   lapply(rlang::set_names(paste0(c("un", ""), "adjusted")), function(t) {
     model_specs <- subset(specs, estimate == t)
     labs <- rlang::set_names(
-      x = seq_len(nrow(specs)),
+      x = seq_len(nrow(model_specs)),
       nm = with(model_specs, paste0(outcome," ~ ",exposure," | ",moderator))
     )
     lapply(labs, function(i) {
-      with(specs, glm(
+      with(model_specs, glm(
         formula = as.formula(formula[i]),
         family = likelihood[i],
         data = data,

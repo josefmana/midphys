@@ -1,7 +1,7 @@
 #' Import data for analysis
 #'
 #' Reads, pre-processes, and cleans data for analysis.
-#' 
+#'
 #' @param file Character. Path to raw data XLSX file.
 #' @param sheet Character or numeric. Denotes sheet where the
 #'   data resides inside of `file`.
@@ -10,9 +10,9 @@
 #' @param thresholds Tibble or data.frame. Thresholds based on normative
 #'   values of  memory tasks. Computed by \code{extract_thresholds}.
 #' @param thres_type Character.
-#' 
+#'
 #' @returns A tibble with following columns:
-#' 
+#'
 #' @export
 import_data <- function(
     file,
@@ -21,7 +21,7 @@ import_data <- function(
     thresholds,
     thres_type = "mean") {
   # Read the file:
-  xlsx::read.xlsx(file, sheet = sheet) |>
+  readxl::read_xlsx(file, sheet = sheet, na = "NA") |>
     # Keep variables of interest:
     dplyr::select(
       1, Study, Age, `Education-2-cat`, Type_of_prevailing_occupation_during_life, Marital_status, # predictors
@@ -56,21 +56,24 @@ import_data <- function(
         # re-calculate z-score for memory tasks based on table norms
         # from data provided to us by original authors
         sapply(seq_len(dplyr::n()), function(i) {
-          score <- RAVLT_delayed_recall[i]
+          score <- as.integer(RAVLT_delayed_recall[i])
           M <- norms[ifelse(Study[i] == "NANOK", "pvlt", "ravlt"), "M", Education[i], Age_bin[i]]
           SD <- norms[ifelse(Study[i] == "NANOK", "pvlt", "ravlt"), "S", Education[i], Age_bin[i]]
           (score - M) / SD
         }),
         use.names = FALSE
       ),
-      cutoff = sapply(seq_len(dplyr::n()), function(i) {
-        # helper column showing thresholds for cognitive SA
-        with(thresholds, {
-          t <- dplyr::case_when(Study[i] == "NANOK" ~ "pvlt", Study[i] == "COSACTIW" ~ "ravlt")
-          e <- as.character(Education[i])
-          get(paste0("thresh_", thres_type))[task == t & edu == e]
-        })
-      }),
+      cutoff = unlist(
+        sapply(seq_len(dplyr::n()), function(i) {
+          # helper column showing thresholds for cognitive SA
+          with(thresholds, {
+            t <- dplyr::case_when(Study[i] == "NANOK" ~ "pvlt", Study[i] == "COSACTIW" ~ "ravlt")
+            e <- as.character(Education[i])
+            get(paste0("thresh_", thres_type))[task == t & edu == e]
+          })
+        }),
+        use.names = FALSE
+      ),
       Delayed_recall_SA = dplyr::if_else(
         # need to be at least at the level of threshold in delayed
         # memory task to qualify for SA
@@ -78,7 +81,7 @@ import_data <- function(
       ),
       SA = factor(dplyr::if_else(
         # needs at least the cut-off in a memory task
-        # and at least average performance in all remaining tasks 
+        # and at least average performance in all remaining tasks
         # to be labelled SA = 1
         (`SA-TMT-B-new` + `SA-BNT-new` + `SA-VF` + Delayed_recall_SA) == 4,
         true = 1,
@@ -112,6 +115,7 @@ import_data <- function(
     ) |>
     # Re-naming variables:
     dplyr::rename(
+      "ID" = "ID...1",
       "Total_MA" = "Total-mental-activities",
       "Delayed_recall_raw" = "RAVLT_delayed_recall",
       "Delayed_recall_z" = "Z_RAVLT_PVLT_delayed_recall",

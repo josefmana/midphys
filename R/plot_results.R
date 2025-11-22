@@ -27,7 +27,7 @@ plot_results <- function(
   # Keep only variables of interest:
   specs <- subset(specs, analysis == type)
   # Prepare text:
-  tet <- purrr::map_dfr(paste0(c("un",""), "adjusted"), function(i) {
+  text <- purrr::map_dfr(paste0(c("un",""), "adjusted"), function(i) {
     stats[[i]]$mPA |>
       dplyr::filter(Moderator == "") |>
       dplyr::filter(y %in% specs$outcome) |>
@@ -46,7 +46,7 @@ plot_results <- function(
         ),
         p = dplyr::if_else(
           `p value` != "< .001",
-          ture = paste0("p = ", `p value`),
+          true = paste0("p = ", `p value`),
           false = paste0("p ",  `p value`)
         ),
         label = paste(ES, p, sep = ", ")
@@ -152,10 +152,10 @@ plot_results <- function(
       colour = "red3",
       linewidth = 1.33
     ) +
-    ggplot2::scale_x_discrete(expand = expansion(add = .25)) +
+    ggplot2::scale_x_discrete(expand = ggplot2::expansion(add = .25)) +
     ggplot2::scale_y_continuous(breaks = c(0, 1), labels = c(0, 1), name = NULL) +
-    labs(x = NULL) +
-    facet_wrap(
+    ggplot2::labs(x = NULL) +
+    ggplot2::facet_wrap(
       facets = ~ factor( Outcome, levels = c("Anx", "Depr", "cPA", "SA") ),
       ncol = 1,
       scales = "free_y",
@@ -187,7 +187,7 @@ plot_results <- function(
     }
     ggplot2::ggsave(
       plot = plt,
-      filename = here::here("_figures", fname),
+      filename = here::here("figures", fname),
       dpi = 300,
       height = dplyr::case_when(type == 1 ~ 9.9, type == 2 ~ 7.5),
       width = dplyr::case_when(type == 1 ~ 9.0, type == 2 ~ 7.5)

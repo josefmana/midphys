@@ -1,14 +1,14 @@
 #' Compute scaled scores
-#' 
+#'
 #' Using Table 7 from the normative study by Frydrychova et al.
 #' ([2018](https://psycnet.apa.org/record/2018-63633-003)), this
 #' function maps a single raw RAVLT delayed recall score to a
 #' scaled score (M = 10, SD = 3).
-#' 
+#'
 #' @param raw Numeric. Raw RAVLT delayed recall score.
-#' 
+#'
 #' @returns Numeric vector with scaled scores.
-#' 
+#'
 #' @export
 ravlt_ss <- function(raw) {
   dplyr::case_when(
@@ -31,10 +31,10 @@ ravlt_ss <- function(raw) {
 
 
 #' Find memory thresholds for superaging
-#' 
+#'
 #' Using normative values of RAVLT and PVLT raw normative
 #' data.
-#' 
+#'
 #' @param pvlt_data_file Character. Path do PVLT normative
 #'   data.
 #' @param pvlt_id_file Character. Path do PVLT included IDs.
@@ -44,17 +44,18 @@ ravlt_ss <- function(raw) {
 #'   data (subset of NANOK).
 #' @param output Character. Return thresholds for SuperAging
 #'   (`"thresholds"`) or normative values (`"norms"`).
-#' 
+#'
 #' @returns RAVLT and PVLT thresholds for SuperAging or
 #'   normative tables of RAVLT and PVLT.
-#' 
+#'
 #' @export
 extract_thresholds <- function(
     pvlt_data_file,
     pvlt_id_file,
     nanok_file,
     ravlt_file,
-    output = "thresholds") {
+    output = "thresholds"
+    ) {
   # Demography data:
   demo <- readxl::read_xls(path = nanok_file, sheet = "NANOK_demografie") |>
     dplyr::mutate(edu = dplyr::case_when(
@@ -113,14 +114,14 @@ extract_thresholds <- function(
         do.call(fun, list(subset(get(task), age_cat == "60-64" & edu == l)$raw))
       })
     }) |>
-      tibble::as_tibble() |>
+      as.data.frame() |>
       tibble::rownames_to_column("edu") |>
       dplyr::mutate(
         df = N - 1,
         low_CI = M + ( S / sqrt(N) ) * qt(.025, df),
         high_CI = M - ( S / sqrt(N) ) * qt(.025, df),
         thresh_mean = ceiling(M),
-        thresh_low  = ceiling(low_CI),
+        thresh_low = ceiling(low_CI),
         thresh_high = ceiling(high_CI),
         task = task
       )

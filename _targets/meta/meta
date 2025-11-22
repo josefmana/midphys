@@ -1,0 +1,36 @@
+name|type|data|command|depend|seed|path|time|size|bytes|format|repository|iteration|parent|children|seconds|warnings|error
+pvlt_excl|stem|2576b53e5b6acfa6|a3e51f43bfde3d88|2c530c1562a7fbd1|-779303777|/Users/josefmana/Desktop/geropsychology/midphys/data-raw/PVLT_2012_NANOK_export_fin.xls - vyřazení.csv|t20064.5053726124s|s1221b|1221|file|local|vector|||0.007||
+nanok_demo|stem|6a9869104a237490|0dad203706a5a123|2c530c1562a7fbd1|-2128590642|/Users/josefmana/Desktop/geropsychology/midphys/data-raw/data_NANOK_2012-2013-2014_pro-Ondreje-Rydla_opr-MoCA.xls|t20064.5823654988s|s493056b|493056|file|local|vector|||0.001||
+pvlt_data|stem|4f53868b3b126905|f0cd98d29a68d36b|2c530c1562a7fbd1|-426978723|/Users/josefmana/Desktop/geropsychology/midphys/data-raw/PVLT_2012_NANOK_export_fin.xls - PVLT Czech.csv|t20064.5050595988s|s94800b|94800|file|local|vector|||0.001||
+ravlt_norms|stem|d5b60d246140f444|dc3afac732cfd46c|2c530c1562a7fbd1|-1138026765|/Users/josefmana/Desktop/geropsychology/midphys/data-raw/ravlt_analyza.csv|t20064.4632089475s|s73291b|73291|file|local|vector|||0||
+datafile|stem|c0031892a04da9b2|c3319e2db125bffc|2c530c1562a7fbd1|789339568|/Users/josefmana/Desktop/geropsychology/midphys/data-raw/COSACTIW_NANOK_pro-jamovi-oprav.xlsx|t20414.3196561468s|s1318701b|1318701|file|local|vector|||0.027||
+dag|stem|9a3c2b14132ff247|037e4d80d9eeec84|83ee9bcaa56cdbe9|-1819100180||t20414.4327960822s|s616b|616|rds|local|vector|||0.47||
+dag_plot|stem|7aa3cfe853f8aa52|8fb7b9bee68b367d|83ee9bcaa56cdbe9|-526697457||t20414.4327977689s|s255721b|255721|rds|local|vector|||0.031||
+adjustment_sets|stem|1f2e3b7ab3adca1d|daa8c5f1a8b005ce|ceb9fe5d7b9ff2d6|-1854510410||t20414.4328003906s|s517b|517|rds|local|vector|||0.202||
+memory_norms|stem|0ee07b83d2fffb47|1a22bf00e66a506d|9c3d6f17220c8f4e|628309221||t20414.4328036176s|s610b|610|rds|local|vector|||0.27|There was 1 warning in `dplyr::mutate()`. ℹ In argument: `ID = as.numeric(Jméno)`. Caused by warning: ! NAs introduced by coercion|
+memory_thresholds|stem|efac2f43a75467f0|ed96dd7832695b1d|9c3d6f17220c8f4e|-1514444268||t20414.4328050599s|s379b|379|rds|local|vector|||0.118|There was 1 warning in `dplyr::mutate()`. ℹ In argument: `ID = as.numeric(Jméno)`. Caused by warning: ! NAs introduced by coercion|
+specs|stem|9954b6c6978d5759|4125219a3e0da91d|35ea15a3794e125c|-2050852063||t20414.4328056442s|s941b|941|rds|local|vector|||0.044||
+data|stem|9330dfcd580aad29|d37010a0d207e2eb|f4d5c19731ddd2e3|33550471||t20414.432807606s|s11819b|11819|rds|local|vector|||0.162||
+models|stem|1cad8d6d46704852|3b2aaec1528b6777|3110fe4e645aa77d|-1655822660||t20414.4355789063s|s2012613b|2012613|rds|local|vector|||0.126||
+diagnostics|stem|887bc2e0d8d5a15d|edbdcc466a1004b5|8adb0de2526c9b44|1806411824||t20414.4357144047s|s11469845b|11469845|rds|local|vector|||7.498||
+draw_dag|function|2474868b01ba3dc9
+rprint|function|be663e81e9071354
+set2equation|function|fdff19801ee50ec2
+remove_brackets|function|db1d8fe897b2aba1
+compare_means|function|04e9d8b10e008be7
+ravlt_ss|function|352eb7a38e2a1d4e
+fit_models|function|c9603b231f9d0b1a
+compute_means|function|35a61a6d3c6da1fe
+bh_adjust|function|b91fd943c4ce443e
+import_data|function|36d24d2a7abaf153
+diagnose_models|function|7df446aa9b57eefe
+plot_results|function|21f6eb08edc549e5
+extract_means|function|941a1536e212cb55
+zerolead|function|4c0b2bf2f68d8ea6
+adjustment_table|function|5e5a776fe005f848
+model_specs|function|d2cda0b9399123dd
+extract_thresholds|function|7aaf85198942b392
+stat_test|function|27a0d7db46f96687
+results|stem|f2b323f20354ef4d|31b022f20b853b04|f6dbbe87dc39bf39|-322906963||t20414.4734285343s|s5435b|5435|rds|local|vector|||3.535|Using an external vector in selections was deprecated in tidyselect 1.1.0. ℹ Please use `all_of()` or `any_of()` instead.   # Was:   data %>% select(ncols)    # Now:   data %>% select(all_of(ncols))  See <https://tidyselect.r-lib.org/reference/faq-external-vector.html>.|
+results_plot|stem|945b27d93a37eeb3|1a637ecb977afe41|23baaf19b42949a4|-1141224548||t20414.4734445061s|s1735846b|1735846|rds|local|vector|||1.111|Removed 1 row containing non-finite outside the scale range (`stat_smooth()`).. Removed 1 row containing missing values or values outside the scale range (`geom_point()`).|
+cognition_plot|stem|57c0a4702b0a7451|558e7b9bd75d33e1|23baaf19b42949a4|-34129545||t20414.4734501056s|s396454b|396454|rds|local|vector|||0.351|Removed 6 rows containing non-finite outside the scale range (`stat_ydensity()`).. Removed 6 rows containing non-finite outside the scale range (`stat_boxplot()`).. Removed 6 rows containing non-finite outside the scale range (`stat_summary()`).|

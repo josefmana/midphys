@@ -1,17 +1,8 @@
 # files not supposed to be shared
-models/**/*.rds
-**/.DS_Store
-**/*.docx
-**/*.pages
-**/*.tiff
-**/*.aux
-**/*.out
-**/*.ttt
-**/*.fff
-**/*.log
 Rplots.pdf
 data-raw/
 docs/
+figures/
 
 # History files
 .Rprofile

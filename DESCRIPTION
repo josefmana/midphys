@@ -21,7 +21,6 @@ Imports:
     ggdag,
     ggplot2,
     tibble,
-    xlsx,
     tidyselect,
     readr,
     readxl,
