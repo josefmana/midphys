@@ -11,6 +11,8 @@ memory_norms|stem|0ee07b83d2fffb47|1a22bf00e66a506d|9c3d6f17220c8f4e|628309221||
 memory_thresholds|stem|efac2f43a75467f0|ed96dd7832695b1d|9c3d6f17220c8f4e|-1514444268||t20414.4328050599s|s379b|379|rds|local|vector|||0.118|There was 1 warning in `dplyr::mutate()`. ℹ In argument: `ID = as.numeric(Jméno)`. Caused by warning: ! NAs introduced by coercion|
 data|stem|9330dfcd580aad29|d37010a0d207e2eb|f4d5c19731ddd2e3|33550471||t20414.432807606s|s11819b|11819|rds|local|vector|||0.162||
 boxbox_transform|function|378ef1461462edb8
+specs|stem|3cff86250f18fe5b|e595c95487dbd6d0|a4c231563a224f30|-2050852063||t20415.701940176s|s1283b|1283|rds|local|vector|||0.2||
+models|stem|25426b125e837610|a3ae114450318ef7|bf4cae219b69697a|-1655822660||t20415.7021926407s|s5593766b|5593766|rds|local|vector|||21.314||
 g_computation|function|b5aaf436986ba714
 compare_means|function|8319519e0a97973b
 ravlt_ss|function|352eb7a38e2a1d4e
@@ -27,18 +29,16 @@ save_tables|function|9a9bf38b0fd69ae9
 bh_adjust|function|b91fd943c4ce443e
 compute_means|function|35a61a6d3c6da1fe
 import_data|function|36d24d2a7abaf153
+fit_models|function|c12380a6f6d9e00d
 boxcox_transform|function|5ca39f3f3d0ec6b0
 diagnose_models|function|f58a436b203f2859
 extract_thresholds|function|7aaf85198942b392
-model_specs|function|37ae8567df68034c
+model_specs|function|7ee8a43737af4173
 zerolead|function|4c0b2bf2f68d8ea6
 extract_means|function|941a1536e212cb55
 adjustment_table|function|5e5a776fe005f848
-fit_models|function|9f367de35f87cc9b
 stat_test|function|2c92614ed1ce3d63
-specs|stem|257c34208b6d7a01|e595c95487dbd6d0|50171e36c52049a2|-2050852063||t20415.6518729044s|s1261b|1261|rds|local|vector|||0.201||
-models|stem|a2218245b09ad258|a3ae114450318ef7|00b441e4ca3f1fa0|-1655822660||t20415.6518772179s|s1954328b|1954328|rds|local|vector|||0.179||
-results|stem|c1497bc94812b754|31b022f20b853b04|a876d689d87a30ff|-322906963||t20415.6519495227s|s7803b|7803|rds|local|vector|||6.175||
-diagnostics|stem|667cf7a5a8718c26|edbdcc466a1004b5|9c89685a1d4e100b|1806411824||t20415.6521398309s|s78943928b|78943928|rds|local|vector|||13.05||
-results_plot|stem|b1fd89d89916a58a|1a637ecb977afe41|928f3ba87052d052|-1141224548||t20415.6521543833s|s1738407b|1738407|rds|local|vector|||0.956|Removed 1 row containing non-finite outside the scale range (`stat_smooth()`).. Removed 1 row containing missing values or values outside the scale range (`geom_point()`).|
-cognition_plot|stem|857dcfd0cce7159a|558e7b9bd75d33e1|928f3ba87052d052|-34129545||t20415.6521603409s|s398918b|398918|rds|local|vector|||0.394|Removed 6 rows containing non-finite outside the scale range (`stat_ydensity()`).. Removed 6 rows containing non-finite outside the scale range (`stat_boxplot()`).. Removed 6 rows containing non-finite outside the scale range (`stat_summary()`).|
+results|stem|5c3f6ea7490e96c7|1132aa709255e7ec|22b8b763779187a3|-322906963||t20415.7027632603s|s8049b|8049|rds|local|vector|||5.919||
+diagnostics|stem|a995871139f24367|468a9a0848bf7b40|383a3f798cd2f3b8|1806411824||t20415.7029526274s|s82602416b|82602416|rds|local|vector|||12.843||
+results_plot|stem|658167c7e2fdbbf0|1a637ecb977afe41|d9639f598ed02787|-1141224548||t20415.7029681398s|s1738697b|1738697|rds|local|vector|||1.031|Removed 1 row containing non-finite outside the scale range (`stat_smooth()`).. Removed 1 row containing missing values or values outside the scale range (`geom_point()`).|
+cognition_plot|stem|a90f4b7458a5c0ec|558e7b9bd75d33e1|d9639f598ed02787|-34129545||t20415.7029733158s|s399170b|399170|rds|local|vector|||0.331|Removed 6 rows containing non-finite outside the scale range (`stat_ydensity()`).. Removed 6 rows containing non-finite outside the scale range (`stat_boxplot()`).. Removed 6 rows containing non-finite outside the scale range (`stat_summary()`).|

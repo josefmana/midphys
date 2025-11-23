@@ -16,6 +16,6 @@ targets_regressions <- list(
   ),
   targets::tar_target(
     diagnostics,
-    command = diagnose_models(models)
+    command = diagnose_models(models$fits)
   )
 )

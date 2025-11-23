@@ -30,6 +30,8 @@ Imports:
     performance,
     emmeans,
     ggtext,
-    ggpubr
+    ggpubr,
+    MASS,
+    bestNormalize
 Suggests: 
     rmarkdown

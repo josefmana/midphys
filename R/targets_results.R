@@ -3,7 +3,7 @@ targets_results <- list(
   targets::tar_target(
     results,
     command = stat_test(
-      fits = models,
+      fits = models$fits,
       specs = specs,
       sets = adjustment_sets
     )

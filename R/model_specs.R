@@ -34,7 +34,7 @@ model_specs <- function(table) {
       ) |>
         dplyr::mutate(
           transformed = dplyr::case_when(
-            likelihood == "gaussian" ~ paste(y, "_trans ~ ", table[i, "X"]),
+            likelihood == "gaussian" ~ paste0(y, "_trans ~ ", table[i, "X"]),
             .default = adjusted
           ),
           #`g-computation` = transformed,

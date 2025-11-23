@@ -10,7 +10,8 @@
 #' @param contr Logical. Set sum contrasts to factors to
 #'   avoid multicollinearity? Defaults to `TRUE`.
 #'
-#' @return A named nested list with regression models.
+#' @return Nested named list with regression models (fits)
+#'   and transformation objects (transforms) if applicable.
 #'
 #' @export
 fit_models <- function(data, specs, contr = TRUE) {
@@ -22,14 +23,21 @@ fit_models <- function(data, specs, contr = TRUE) {
       }
     }
   }
-  # Optionally extarct variables for
-  # Box-Cox transformation:
+  # Optionally do normalization:
   use_transform <- any(c("transformed", "g-computation") %in% specs$estimate)
   if (use_transform) {
     trans_y <- specs |>
       dplyr::filter(likelihood == "gaussian") |>
       dplyr::distinct(outcome) |>
       dplyr::pull()
+    transforms <- lapply(rlang::set_names(trans_y), function(y) {
+      bestNormalize::bestNormalize(data[[y]], k = 10, r = 100)
+    })
+    for (y in trans_y) {
+      data[[paste0(y, "_trans")]] <- transforms[[y]]$x.t
+    }
+  } else {
+    transforms <- NULL
   }
   # Centre age:
   data$Age <- as.numeric(scale(data$Age, center = TRUE, scale = FALSE))
@@ -38,34 +46,16 @@ fit_models <- function(data, specs, contr = TRUE) {
     dplyr::distinct(estimate) |>
     dplyr::pull() |>
     rlang::set_names()
-  lapply(types, function(t) {
+  # Fit the models:
+  fits <- lapply(types, function(t) {
     model_specs <- subset(specs, estimate == t)
     labs <- rlang::set_names(
       x = seq_len(nrow(model_specs)),
-      nm = with(model_specs, paste0(outcome," ~ ",exposure," | ",moderator))
+      nm = with(model_specs, paste0(outcome, " ~ ", exposure, " | ", moderator))
     )
     lapply(labs, function(i) {
-      resp <- model_specs$outcome[i]
       form <- model_specs$formula[i]
       like <- model_specs$likelihood[i]
-      # Transform response if appropriate:
-      if (t %in% c("transformed", "g-computation") && resp %in% trans_y) {
-        trans <- model_specs$transformation[i]
-        if (trans == "Box-Cox") {
-          if (resp == "MMSE") {
-            data[[resp]] <- 30 - data[[resp]]
-          }
-          data[[resp]] <- boxcox_transform(
-            data,
-            y = resp,
-            f = form,
-            return_pars = FALSE
-          )
-        } else if (trans == "log(y+1)") {
-          data[[resp]] <- log(data[[resp]] + 1)
-        }
-      }
-      # Fit model:
       if (like == "gaussian") {
         lm(as.formula(form), data)
       } else {
@@ -73,4 +63,6 @@ fit_models <- function(data, specs, contr = TRUE) {
       }
     })
   })
+  # Return fits and transformation info:
+  lapply(rlang::set_names(c("fits", "transforms")), \(i) get(i))
 }
