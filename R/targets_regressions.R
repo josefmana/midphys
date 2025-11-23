@@ -3,8 +3,7 @@ targets_regressions <- list(
   targets::tar_target(
     specs,
     command = model_specs(
-      table = adjustment_sets,
-      faq = "continuous"
+      table = adjustment_sets
     )
   ),
   targets::tar_target(
@@ -12,7 +11,6 @@ targets_regressions <- list(
     command = fit_models(
       data,
       specs,
-      log_1 = NULL,
       contr = TRUE
     )
   ),
