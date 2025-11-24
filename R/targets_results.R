@@ -5,7 +5,8 @@ targets_results <- list(
     command = stat_test(
       fits = models$fits,
       specs = specs,
-      sets = adjustment_sets
+      sets = adjustment_sets,
+      CIs = TRUE
     )
   ),
   targets::tar_target(

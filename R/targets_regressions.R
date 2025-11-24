@@ -7,11 +7,21 @@ targets_regressions <- list(
     )
   ),
   targets::tar_target(
+    matches,
+    command = perform_matching(
+      data,
+      sets = adjustment_sets,
+      dist = "glm",
+      link = "logit"
+    )
+  ),
+  targets::tar_target(
     models,
     command = fit_models(
       data,
       specs,
-      contr = TRUE
+      contr = TRUE,
+      match = matches
     )
   ),
   targets::tar_target(

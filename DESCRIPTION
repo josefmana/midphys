@@ -32,6 +32,9 @@ Imports:
     ggtext,
     ggpubr,
     MASS,
-    bestNormalize
+    bestNormalize,
+    MatchIt,
+    cobalt,
+    glue
 Suggests: 
     rmarkdown

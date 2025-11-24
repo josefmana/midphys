@@ -25,35 +25,36 @@ plot_results <- function(
     type,
     save = TRUE) {
   # Keep only variables of interest:
-  specs <- subset(specs, analysis == type)
+  model_specs <- specs |>
+    dplyr::filter(analysis == type) |>
+    dplyr::filter(stringr::str_detect(estimate, "adjusted"))
   # Prepare text:
   text <- purrr::map_dfr(paste0(c("un",""), "adjusted"), function(i) {
     stats[[i]]$mPA |>
       dplyr::filter(Moderator == "") |>
-      dplyr::filter(y %in% specs$outcome) |>
+      dplyr::filter(Outcome %in% unique(model_specs$outcome)) |>
       dplyr::mutate(
         #est = i,
-        comp = stringr::str_replace(Comparison, "\n", " "),
+        comp = stringr::str_remove(Contrast, " .*"),
         ES = dplyr::if_else(
           df != Inf,
-          paste0("d<sub>", sub("adjusted", "adj.", i), "</sub> = ", comp),
-          paste0("OR<sub>", sub("adjusted", "adj.", i), "</sub> = ", comp)
+          glue::glue("d<sub>{sub('adjusted', 'adj.', i)}</sub> = {comp}"),
+          glue::glue("OR<sub>{sub('adjusted', 'adj.', i)}</sub> = {comp}")
         ),
         stat = dplyr::if_else(
           df != Inf,
-          true = paste0("t(", df, ") = ", `test. stat.`),
-          false = paste0("z = ", `test. stat.`)
+          true = glue::glue("t({df}) = {Statistic}"),
+          false = glue::glue("z = {Statistic}")
         ),
         p = dplyr::if_else(
           `p value` != "< .001",
-          true = paste0("p = ", `p value`),
-          false = paste0("p ",  `p value`)
+          true = glue::glue("p = {`p value`}"),
+          false = glue::glue("p {`p value`}")
         ),
         label = paste(ES, p, sep = ", ")
       ) |>
-      dplyr::select(y, label)
+      dplyr::select(Outcome, label)
   }) |>
-    dplyr::rename("Outcome" = "y") |>
     dplyr::mutate(
       x = "COSACTIW",
       y = unlist(dplyr::case_when(
@@ -68,13 +69,13 @@ plot_results <- function(
       .fns = \(x) dplyr::if_else(x == 1, 1, 0)
     )) |>
     tidyr::pivot_longer(
-      cols = unique(specs$outcome),
+      cols = unique(model_specs$outcome),
       names_to = "Outcome",
       values_to = "Score"
     ) |>
     dplyr::mutate(
       type = unlist(sapply(seq_len(dplyr::n()), function(i) {
-        with(specs, {
+        with(model_specs, {
           ifelse(
             unique(likelihood[outcome == Outcome[i]]) == "gaussian",
             yes = "continuous",

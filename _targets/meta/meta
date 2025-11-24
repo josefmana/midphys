@@ -6,39 +6,43 @@ ravlt_norms|stem|d5b60d246140f444|dc3afac732cfd46c|2c530c1562a7fbd1|-1138026765|
 datafile|stem|c0031892a04da9b2|c3319e2db125bffc|2c530c1562a7fbd1|789339568|/Users/josefmana/Desktop/geropsychology/midphys/data-raw/COSACTIW_NANOK_pro-jamovi-oprav.xlsx|t20414.3196561468s|s1318701b|1318701|file|local|vector|||0.027||
 dag|stem|9a3c2b14132ff247|037e4d80d9eeec84|83ee9bcaa56cdbe9|-1819100180||t20414.4327960822s|s616b|616|rds|local|vector|||0.47||
 dag_plot|stem|7aa3cfe853f8aa52|8fb7b9bee68b367d|83ee9bcaa56cdbe9|-526697457||t20414.4327977689s|s255721b|255721|rds|local|vector|||0.031||
-adjustment_sets|stem|1f2e3b7ab3adca1d|daa8c5f1a8b005ce|ceb9fe5d7b9ff2d6|-1854510410||t20414.4328003906s|s517b|517|rds|local|vector|||0.202||
 memory_norms|stem|0ee07b83d2fffb47|1a22bf00e66a506d|9c3d6f17220c8f4e|628309221||t20414.4328036176s|s610b|610|rds|local|vector|||0.27|There was 1 warning in `dplyr::mutate()`. ℹ In argument: `ID = as.numeric(Jméno)`. Caused by warning: ! NAs introduced by coercion|
 memory_thresholds|stem|efac2f43a75467f0|ed96dd7832695b1d|9c3d6f17220c8f4e|-1514444268||t20414.4328050599s|s379b|379|rds|local|vector|||0.118|There was 1 warning in `dplyr::mutate()`. ℹ In argument: `ID = as.numeric(Jméno)`. Caused by warning: ! NAs introduced by coercion|
 data|stem|9330dfcd580aad29|d37010a0d207e2eb|f4d5c19731ddd2e3|33550471||t20414.432807606s|s11819b|11819|rds|local|vector|||0.162||
 boxbox_transform|function|378ef1461462edb8
-specs|stem|3cff86250f18fe5b|e595c95487dbd6d0|a4c231563a224f30|-2050852063||t20415.701940176s|s1283b|1283|rds|local|vector|||0.2||
-models|stem|25426b125e837610|a3ae114450318ef7|bf4cae219b69697a|-1655822660||t20415.7021926407s|s5593766b|5593766|rds|local|vector|||21.314||
+matching|function|7a96e630ec62a5aa
+adjustment_sets|stem|dda309a2a2cd5d61|daa8c5f1a8b005ce|a25d064bf5fd6fba|-1854510410||t20415.778158457s|s529b|529|rds|local|vector|||0.727||
+matches|stem|a7351c3e01ea3e9d|18685e365704b69d|ba63e3eb142090ad|292580782||t20416.3322084233s|s950969b|950969|rds|local|vector|||0.47||
+specs|stem|cffaefa9c2a121d8|e595c95487dbd6d0|6fc3e80ea97cc565|-2050852063||t20416.5057558941s|s1510b|1510|rds|local|vector|||0.227||
+models|stem|829abb636e891358|e6c71802e003d0df|8c8ca59b9691a6dd|-1655822660||t20416.5207494699s|s11987655b|11987655|rds|local|vector|||21.003|non-integer #successes in a binomial glm!. non-integer #successes in a binomial glm!. non-integer #successes in a binomial glm!. non-integer #successes in a binomial glm!. non-integer #successes in a binomial glm!. non-integer #successes in a binomial glm!. non-integer #successes in a binomial glm!. non-integer #successes in a binomial glm!. non-integer #successes in a binomial glm!. non-integer #successes in a binomial glm!. non-integer #successes in a binomial glm!|
+diagnostics|stem|ae7c9302b486c1a1|468a9a0848bf7b40|c98cdf89baa76f7e|1806411824||t20416.7073484759s|s113965314b|113965314|rds|local|vector|||15.723||
+results|stem|67c02b825e01644c|017f848dd6546ca3|14fbf4d782ce03db|-322906963||t20416.7541724785s|s7609b|7609|rds|local|vector|||11.967|Using an external vector in selections was deprecated in tidyselect 1.1.0. ℹ Please use `all_of()` or `any_of()` instead.   # Was:   data %>% select(estimate)    # Now:   data %>% select(all_of(estimate))  See <https://tidyselect.r-lib.org/reference/faq-external-vector.html>.|
 g_computation|function|b5aaf436986ba714
-compare_means|function|8319519e0a97973b
+compare_means|function|8d5fe1fe36f2253b
 ravlt_ss|function|352eb7a38e2a1d4e
 remove_brackets|function|db1d8fe897b2aba1
 model_predictions|function|8dcdada59a4b12eb
 model_diagnose|function|336ec1f2a730c735
-matching|function|7a96e630ec62a5aa
+compute_predictions|function|34240bb639717a9c
 rprint|function|be663e81e9071354
 model_fit|function|6cffcc38ebafb2a2
-plot_results|function|21f6eb08edc549e5
+plot_results|function|40d11dbc0f1ccd96
 set2equation|function|fdff19801ee50ec2
 draw_dag|function|2474868b01ba3dc9
+g_computations|function|563167560a1fca8f
 save_tables|function|9a9bf38b0fd69ae9
 bh_adjust|function|b91fd943c4ce443e
 compute_means|function|35a61a6d3c6da1fe
+extract_means|function|0d2d08d4d9b18517
+perform_matching|function|7be8d96d1c92b6d4
 import_data|function|36d24d2a7abaf153
-fit_models|function|c12380a6f6d9e00d
+fit_models|function|58d90201a279d6ab
 boxcox_transform|function|5ca39f3f3d0ec6b0
 diagnose_models|function|f58a436b203f2859
 extract_thresholds|function|7aaf85198942b392
-model_specs|function|7ee8a43737af4173
+model_specs|function|dcec3b04c359c792
 zerolead|function|4c0b2bf2f68d8ea6
-extract_means|function|941a1536e212cb55
-adjustment_table|function|5e5a776fe005f848
-stat_test|function|2c92614ed1ce3d63
-results|stem|5c3f6ea7490e96c7|1132aa709255e7ec|22b8b763779187a3|-322906963||t20415.7027632603s|s8049b|8049|rds|local|vector|||5.919||
-diagnostics|stem|a995871139f24367|468a9a0848bf7b40|383a3f798cd2f3b8|1806411824||t20415.7029526274s|s82602416b|82602416|rds|local|vector|||12.843||
-results_plot|stem|658167c7e2fdbbf0|1a637ecb977afe41|d9639f598ed02787|-1141224548||t20415.7029681398s|s1738697b|1738697|rds|local|vector|||1.031|Removed 1 row containing non-finite outside the scale range (`stat_smooth()`).. Removed 1 row containing missing values or values outside the scale range (`geom_point()`).|
-cognition_plot|stem|a90f4b7458a5c0ec|558e7b9bd75d33e1|d9639f598ed02787|-34129545||t20415.7029733158s|s399170b|399170|rds|local|vector|||0.331|Removed 6 rows containing non-finite outside the scale range (`stat_ydensity()`).. Removed 6 rows containing non-finite outside the scale range (`stat_boxplot()`).. Removed 6 rows containing non-finite outside the scale range (`stat_summary()`).|
+adjustment_table|function|a96b791f6fbf1439
+stat_test|function|9b96ef7c4c1889f1
+results_plot|stem|8eab28fc4975007b|1a637ecb977afe41|2fba3566863f6a03|-1141224548||t20416.7647280196s|s1733242b|1733242|rds|local|vector|||1.691|Removed 1 row containing non-finite outside the scale range (`stat_smooth()`).. Removed 1 row containing missing values or values outside the scale range (`geom_point()`).|
+cognition_plot|stem|85d2574e0608e5f4|558e7b9bd75d33e1|2fba3566863f6a03|-34129545||t20416.7647340285s|s400020b|400020|rds|local|vector|||0.394|Removed 6 rows containing non-finite outside the scale range (`stat_ydensity()`).. Removed 6 rows containing non-finite outside the scale range (`stat_boxplot()`).. Removed 6 rows containing non-finite outside the scale range (`stat_summary()`).|

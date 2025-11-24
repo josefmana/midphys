@@ -37,7 +37,17 @@ model_specs <- function(table) {
             likelihood == "gaussian" ~ paste0(y, "_trans ~ ", table[i, "X"]),
             .default = adjusted
           ),
-          #`g-computation` = transformed,
+          `g-computation` = transformed,
+          estimand = "ATC",
+          control = dplyr::case_when(
+            exposure == "cPA" ~ "0",
+            exposure == "mPA" ~ "NANOK",
+            exposure == "Education" ~ "lower"
+          ),
+          hypothesis = dplyr::case_when(
+            exposure %in% c("cPA", "Education") ~ "pairwise",
+            exposure %in% c("mPA") ~ "revpairwise"
+          ),
           analysis = dplyr::case_when(
             y == "MMSE" ~ 0,
             stringr::str_detect(y, "_z") ~ 2,
@@ -47,8 +57,7 @@ model_specs <- function(table) {
     })
   }) |>
     tidyr::pivot_longer(
-      #cols = c("unadjusted", "adjusted", "transformed", "g-computation"),
-      cols = c("unadjusted", "adjusted", "transformed"),
+      cols = c("unadjusted", "adjusted", "transformed", "g-computation"),
       values_to = "formula",
       names_to = "estimate"
     )

@@ -9,12 +9,20 @@
 #' @param specs Tibble or data.frame.
 #' @param contr Logical. Set sum contrasts to factors to
 #'   avoid multicollinearity? Defaults to `TRUE`.
+#' @param match List or `NULL`. If provided, it will be
+#'   used for propensity-scores weighted analysis (denoted
+#'   "g-computation" in `specs`).
 #'
 #' @return Nested named list with regression models (fits)
 #'   and transformation objects (transforms) if applicable.
 #'
 #' @export
-fit_models <- function(data, specs, contr = TRUE) {
+fit_models <- function(
+    data,
+    specs,
+    contr = TRUE,
+    match = NULL
+    ) {
   # Optionally set orthogonal contrasts:
   if (contr) {
     for (i in names(data)) {
@@ -56,10 +64,24 @@ fit_models <- function(data, specs, contr = TRUE) {
     lapply(labs, function(i) {
       form <- model_specs$formula[i]
       like <- model_specs$likelihood[i]
-      if (like == "gaussian") {
-        lm(as.formula(form), data)
+      if (t == "g-computation") {
+        matching <- model_specs$matching[i]
+        md <- match$data[[matching]] |>
+          dplyr::select(ID, mPA, distance, weights, subclass)
+        df <- data |>
+          dplyr::left_join(md, by = dplyr::join_by(ID, mPA))
       } else {
-        glm(as.formula(form), family = like, data = data)
+        df <- data
+      }
+      wts <- unlist(ifelse(
+        t == "g-computation",
+        list(df$weights),
+        list(NULL)
+      ), use.names = FALSE)
+      if (like == "gaussian") {
+        lm(as.formula(form), data = df, weights = wts)
+      } else {
+        glm(as.formula(form), family = like, data = df, weights = wts)
       }
     })
   })
