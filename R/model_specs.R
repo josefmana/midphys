@@ -17,6 +17,7 @@ model_specs <- function(table) {
       tibble::tibble(
         outcome = y,
         exposure = table[i, ]$exposure,
+        effect = table[i, ]$effect,
         moderator = dplyr::if_else(
           is.na(table[i, "moderator"]),
           true = "1",
@@ -49,9 +50,12 @@ model_specs <- function(table) {
             exposure %in% c("mPA") ~ "revpairwise"
           ),
           analysis = dplyr::case_when(
-            y == "MMSE" ~ 0,
-            stringr::str_detect(y, "_z") ~ 2,
-            .default = 1
+            y == "MMSE" & effect == "total" ~ "0",
+            y == "MMSE" & effect == "direct" ~ "00",
+            stringr::str_detect(y, "_z") & effect == "total" ~ "2",
+            stringr::str_detect(y, "_z") & effect == "direct" ~ "20",
+            y != "MMSE" & !stringr::str_detect(y, "_z") & effect == "total" ~ "1",
+            y != "MMSE" & !stringr::str_detect(y, "_z") & effect == "direct" ~ "10"
           )
         )
     })

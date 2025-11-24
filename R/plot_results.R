@@ -32,6 +32,7 @@ plot_results <- function(
   text <- purrr::map_dfr(paste0(c("un",""), "adjusted"), function(i) {
     stats[[i]]$mPA |>
       dplyr::filter(Moderator == "") |>
+      dplyr::filter(Analysis == type) |>
       dplyr::filter(Outcome %in% unique(model_specs$outcome)) |>
       dplyr::mutate(
         #est = i,
@@ -102,6 +103,9 @@ plot_results <- function(
     true = list(c("GAI", "GDS15", "FAQ", "Z_SA")),
     false = list(c("Delayed_recall_z", "TMT_B_z", "BNT_30_z", "VF_Animals_z"))
   ))
+  cols <- type |>
+    stringr::str_remove("0") |>
+    as.numeric()
   # Continuous variables:
   conplot <- input |>
     dplyr::filter(type == "continuous") |>
@@ -123,7 +127,7 @@ plot_results <- function(
     ) +
     ggplot2::facet_wrap(
       facets = ~ factor(Outcome, levels = levs), # factor to force order
-      ncol = type,
+      ncol = cols,
       scales = "free_y",
       labeller = ggplot2::as_labeller(labs)
     ) +
@@ -174,7 +178,7 @@ plot_results <- function(
       size = 3
     )
   # Put plot togehter:
-  if (type == 1) {
+  if (type %in% c("1", "10")) {
     plt <- ggpubr::ggarrange(conplot, binplot, ncol = 2)
     fname <- "data-and-stats.jpg"
   } else {

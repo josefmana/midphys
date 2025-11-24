@@ -22,10 +22,11 @@ extract_means <- function(means, specs, digits = 2) {
           y = outcome[i],
           x = exposure[i],
           m = moderator[i],
+          e = effect[i],
           Est_SE = glue::glue("{rprint(Est, digits)} ({rprint(SE, digits)})"),
           Est_CI = glue::glue("{rprint(Est, digits)} [{rprint(low.CL, digits)}, {rprint(upp.CL, digits)}]")
         ) |>
-        dplyr::select(y, x, m, mod, group, Est_SE, Est_CI)
+        dplyr::select(y, x, m, e, mod, group, Est_SE, Est_CI)
     })
   })
 }

@@ -18,7 +18,8 @@ compute_predictions <- function(mods, specs) {
     y <- specs$outcome[i]
     x <- specs$exposure[i]
     m <- specs$moderator[i]
-    model <- mods[[glue::glue("{y} ~ {x} | {m}")]]
+    e <- specs$effect[i]
+    model <- mods[[glue::glue("{y} ~ {x} | {e}")]]
     vars <- unlist(ifelse(
       m == 1,
       yes = list(x),
@@ -30,21 +31,19 @@ compute_predictions <- function(mods, specs) {
       wts = "weights"
     ) |>
       tibble::as_tibble() |>
-      dplyr::mutate(y = y, x = x, m = m)
+      dplyr::mutate(y = y, x = x, m = m, e = e)
   }) |>
       dplyr::mutate(
         mod = dplyr::case_when(
           m == "1" ~ "overall",
-          m == "cPA" ~ cPA,
-          m == "Education" ~ Education
+          m == "cPA" ~ cPA
         ),
         group = dplyr::case_when(
           x == "mPA" ~ mPA,
-          x == "cPA" ~ cPA,
-          x == "Education" ~ Education
+          x == "cPA" ~ cPA
         ),
         Est_SE = glue::glue("{rprint(estimate, 2)} ({rprint(std.error, 2)})"),
         Est_CI = glue::glue("{rprint(estimate, 2)} [{rprint(conf.low, 2)}, {rprint(conf.high, 2)}]")
       ) |>
-      dplyr::select(y, x, m, mod, group, Est_SE, Est_CI)
+      dplyr::select(y, x, m, e, mod, group, Est_SE, Est_CI)
 }

@@ -27,7 +27,13 @@ compare_means <- function(means, specs) {
         `colnames<-`(
           c("contrast", "mod", "Estimate", "SE", "df", "statistic", "p.value", "conf.low", "conf.high")
         ) |>
-        dplyr::mutate(y = outcome[i], x = exposure[i], m = moderator[i], .before = 1)
+        dplyr::mutate(
+          y = outcome[i],
+          x = exposure[i],
+          m = moderator[i],
+          e = effect[i],
+          .before = 1
+        )
     })
   })
 }

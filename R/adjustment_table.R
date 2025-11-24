@@ -10,15 +10,19 @@
 #' @export
 adjustment_table <- function(DAG) {
   tibble::tibble(
-    outcome = c(rep("Cognition",4), rep("Affect",3), "cPA"),
+    outcome = c(rep("Cognition", 3), rep("Affect", 3), "cPA"),
     exposure = c(
-      rep("mPA",2), "cPA", "Education", # Y = Cognition
+      rep("mPA",2), "cPA", # Y = Cognition
       rep("mPA",2), "cPA", # Y = Affect/Mental Health
       "mPA" # Y = c-PA
     ),
-    moderator = c(NA, "cPA", rep(NA, 3), "cPA", rep(NA, 2)),
-    effect = "total",
-    adjustment_type = "canonical"
+    moderator = NA,
+    effect = c(
+      "total", "direct", rep("total", 2), "direct", rep("total", 2)
+    ),
+    adjustment_type = c(
+      "canonical", "minimal", rep("canonical", 2), "minimal", rep("canonical", 2)
+    )
   ) |>
     dplyr::mutate(
       adjustment_set = sapply(seq_len(dplyr::n()), function(i) {
@@ -32,7 +36,8 @@ adjustment_table <- function(DAG) {
         dag$data |>
           dplyr::distinct(set) |>
           dplyr::pull()
-      }),
+      }) |>
+        stringr::str_replace("Affect, ", ""), # dirty trick to get "cPA-free" instead of "direct" effect on Cognition ----
       Y = dplyr::case_when(
         outcome == "Cognition" ~ "{MMSE, FAQ, SA, Z_SA, Delayed_recall_z, TMT_B_z, BNT_30_z, VF_Animals_z}",
         outcome == "Affect" ~ "{GDS15, GAI, Depr, Anx}",

@@ -59,7 +59,7 @@ fit_models <- function(
     model_specs <- subset(specs, estimate == t)
     labs <- rlang::set_names(
       x = seq_len(nrow(model_specs)),
-      nm = with(model_specs, paste0(outcome, " ~ ", exposure, " | ", moderator))
+      nm = with(model_specs, paste0(outcome, " ~ ", exposure, " | ", effect))
     )
     lapply(labs, function(i) {
       form <- model_specs$formula[i]

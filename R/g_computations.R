@@ -8,17 +8,20 @@
 #'   marginal means, including propensity score weights.
 #' @param specs Tibble or data frame. Contains model
 #'   specifications of the queries.
+#' @param data List. Tibbles or data frames with raw data
+#'   used in models fitting, including weights and clusters.
 #'
 #' @returns Tibble.
 #'
 #' @export
-g_computations <- function(mods, specs) {
+g_computations <- function(mods, specs, data) {
   labs <- rlang::set_names(seq_len(nrow(specs)), names(mods))
   purrr::map_dfr(labs, function(i) {
     # Prepare:
     y <- specs$outcome[i]
     x <- specs$exposure[i]
     m <- specs$moderator[i]
+    e <- specs$effect[i]
     l <- specs$likelihood[i]
     int <- stringr::str_detect(specs$term[i], ":")
     ctrl <- specs$control[i]
@@ -32,8 +35,9 @@ g_computations <- function(mods, specs) {
       l == "binomial" ~ list("exp"),
       l == "gaussian" ~ list(NULL)
     ))
-    model <- mods[[glue::glue("{y} ~ {x} | {m}")]]
-    d <- model$data
+    model <- mods[[glue::glue("{y} ~ {x} | {e}")]]
+    match <- specs$matching[i]
+    d <- data[[match]]
     nd <- d[as.character(d[[x]]) == ctrl, ]
     # Compute:
     marginaleffects::avg_comparisons(
@@ -47,7 +51,7 @@ g_computations <- function(mods, specs) {
       transform = trans
     ) |>
       tibble::as_tibble() |>
-      dplyr::mutate(y = y, x = x, m = m, .before = 1)
+      dplyr::mutate(y = y, x = x, m = m, e = e, .before = 1)
   }) |>
     dplyr::mutate(
       contrast = dplyr::if_else(
@@ -55,14 +59,15 @@ g_computations <- function(mods, specs) {
       ),
       mod = dplyr::case_when(
         m == "1" ~ "overall",
-        m == "cPA" ~ cPA
+        #m == "cPA" ~ cPA,
+        .default = NA
       ),
       Estimate = estimate,
       SE = std.error,
       df = NA
     ) |>
     dplyr::select(
-      y, x, m, contrast, mod, Estimate, SE, df,
+      y, x, m, e, contrast, mod, Estimate, SE, df,
       statistic, p.value, tidyselect::starts_with("conf")
     )
 }

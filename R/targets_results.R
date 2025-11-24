@@ -15,7 +15,7 @@ targets_results <- list(
       data,
       stats = results,
       specs = specs,
-      type = 1,
+      type = "1",
       save = TRUE
     )
   ),
@@ -25,7 +25,7 @@ targets_results <- list(
       data,
       stats = results,
       specs = specs,
-      type = 2,
+      type = "2",
       save = TRUE
     )
   )
