@@ -1,4 +1,4 @@
-Package: midphys
+Package: midphysac
 Title: Midlife Physical Activity as Predictor of Later-life Cognition
 Version: 0.0.0.9000
 Authors@R: 
@@ -7,13 +7,17 @@ Authors@R:
         email = "josef.mana@protonmail.com",
         role = c("aut", "cre"),
         comment = c(ORCID = "0000-0002-7817-3978"))
-Description: Using data collected during NANOK normative and COSACTIW retrospective
-    cross-sectional study, estimates ATE of sustained midlife-to-later-life vigorous
-    physical activity on cognition, functional independence, and mental health.
+Description: Using data collected during the COSACTIW retrospective
+    cross-sectional study and its add-on sample, KOKOSA, estimates cognitive,
+    and self-reported affective, functional independence and epidemiological
+    differences stratified by old-old women's attitudes toward physical activity
+    (A2PA). It also provides infrastructure for variable selection of SuperAging
+    predictors in this cohort.
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2
+LazyData: true
 Imports:
     here,
     dplyr,
