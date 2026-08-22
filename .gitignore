@@ -1,3 +1,7 @@
+# targets meta and renv
+_targets/
+renv/library
+
 # files not supposed to be shared
 Rplots.pdf
 docs/
