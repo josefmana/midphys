@@ -5,7 +5,7 @@
 # midphysac
 
 Research compendium for a retrospective study of **attitudes towards physical
-activity (A2PA)** and cognitive **SuperAginf** in old-old women, pooling the
+activity (A2PA)** and cognitive **SuperAging** in old-old women, pooling the
 COSACTIW and KOKOSA samples.
 
 ## Sample
