@@ -42,6 +42,7 @@ Imports:
     cobalt,
     glue,
     rstatix
-Suggests: 
+Suggests:
+    knitr,
     rmarkdown,
     writexl

@@ -1,0 +1,19 @@
+---
+title: "Athletic Identity Predicts SuperAging and Structured Physical Activity Engagement in Old-Old Women"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Athletic Identity Predicts SuperAging and Structured Physical Activity Engagement in Old-Old Women}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(midphysac)
+```
