@@ -1,0 +1,17 @@
+---
+title: A2PA may differentiate between yes-/no-SuperAging ladies over 80
+subtitle: It also differntiates their hypertension, in a different way though
+authors:
+  - name: Josef Mana
+    affiliation: Prague College of Psychosocial Studies
+    roles: writing
+    corresponding: true
+bibliography: references.bib
+---
+
+## Section
+This is a simple placeholder for the manuscript's main document [@knuth84].
+
+```{r}
+1 + 1
+```
