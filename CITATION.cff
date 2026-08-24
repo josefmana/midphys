@@ -1,11 +1,39 @@
+# Citation metadata for the midphysac research compendium.
+#
+# `version` and `date-released` are deliberately absent: the repository is
+# mid-rebuild for the A2PA study and nothing has been released since v1.0.0.
 cff-version: 1.2.0
-message: "If you use this software, please cite it as below."
-authors:
-- family-names: "Mana"
-  given-names: "Josef"
-  orcid: "https://orcid.org/0000-0002-7817-3978"
+message: "If you use this software, please cite it using the metadata below."
+type: software
 title: "midphysac"
-version: 1.0.0
-doi: 10.5281/zenodo.1234
-date-released: 2026-05-22
-url: "https://github.com/josefmana/midphysac"
+abstract: >-
+  Research compendium for a retrospective study of attitudes towards physical
+  activity (A2PA) and cognitive SuperAging in old-old women, pooling the
+  COSACTIW and KOKOSA samples. Earlier releases carry the code behind Georgi et
+  al. (2026), Acta Psychologica, which asked a different question of a different
+  comparison group.
+authors:
+  - family-names: "Mana"
+    given-names: "Josef"
+    orcid: "https://orcid.org/0000-0002-7817-3978"
+repository-code: "https://github.com/josefmana/cosactiw-midphysac"
+url: "https://github.com/josefmana/cosactiw-midphysac"
+license: MIT
+keywords:
+  - physical activity
+  - attitudes towards physical activity
+  - SuperAging
+  - cognitive ageing
+  - causal inference
+  - research compendium
+identifiers:
+  - type: doi
+    value: 10.5281/zenodo.20339953
+    description: >-
+      Concept DOI. Always resolves to the most recent archived release of this
+      repository. Cite this one unless you need a specific version.
+  - type: doi
+    value: 10.5281/zenodo.20339954
+    description: >-
+      Version DOI for release v1.0.0, the code behind Georgi et al. (2026),
+      Acta Psychologica.
