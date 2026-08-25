@@ -1,2 +1,6 @@
+panels/
+*.pdf
+*.png
+*.key
 *.html
 *.R

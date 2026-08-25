@@ -1,19 +1,70 @@
 ---
 title: "Athletic Identity Predicts SuperAging and Structured Physical Activity Engagement in Old-Old Women"
-output: rmarkdown::html_vignette
-vignette: >
-  %\VignetteIndexEntry{Athletic Identity Predicts SuperAging and Structured Physical Activity Engagement in Old-Old Women}
-  %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
+author: "Josef Mana, Martina Mana, Melisa Šenková Schneiderová, Hana Georgi"
+date: "`r Sys.Date()`"
+output:
+  rmarkdown::html_document:
+    toc: true
+    toc_depth: 2
+    fig_width: 7
+    fig_height: 4.5
 ---
 
-```{r, include = FALSE}
+```{r knitr-setup, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
-  comment = "#>"
+  comment = "#>",
+  cache = FALSE,
+  echo = TRUE,
+  warning = FALSE,
+  message = FALSE
 )
 ```
 
-```{r setup}
-library(midphysac)
+# 0 · Setup
+
+```{r package-setup}
+#library(midphysac)
+# Data wrangling and visualisation
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(purrr)
+library(stringr)
+library(gt)
+library(patchwork)
+```
+
+## Data
+
+---
+
+# 1 · The sample (row 1, column 2)
+
+---
+
+# 2 · SuperAging prevalence (row 2, column 1)
+
+---
+
+# 3 · Episodic memory (row 2, column 1)
+
+---
+
+# 4 · The activity ladder (row 2, column 1)
+
+---
+
+# 5 · Where the groups differ, where they do not (row 2, column 1)
+
+---
+
+# 6 · Export
+
+---
+
+# 7 · Session info
+
+```{r session-info, echo = FALSE}
+sessioninfo::session_info()
 ```
