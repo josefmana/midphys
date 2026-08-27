@@ -24,7 +24,6 @@ knitr::opts_chunk$set(
 # 0 · Setup
 
 ```{r package-setup}
-#library(midphysac)
 # Data wrangling and visualisation
 library(dplyr)
 library(tidyr)
@@ -33,9 +32,60 @@ library(purrr)
 library(stringr)
 library(gt)
 library(patchwork)
+
+# Data import
+library(midphysac)
+```
+
+## Variables
+
+```{r variables}
+# A2PA used as the sole predictor for the whole poster
+x <- c(
+  "A2PA" = "A2PA"
+)
+
+# Outcomes compared between A2PA groups
+Y <- c(
+  "Age" = "Age",
+  "Education" = "Education",
+  "BMI" = "BMI",
+  "SA" = "SA_comp",
+  "cPA (WHO)" = "cPA_WHO",
+  "cPA*" = "cPA",
+  "cPA**" = "cPA_no_gardening",
+  "MMSE" = "MMSE",
+  "GDS-15" = "GDS15",
+  "Prob. depression" = "Depr",
+  "GAI-SF" = "GAI",
+  "Prob. anxiety" = "Anx",
+  "FAQ" = "FAQ",
+  "Mental activities" = "Total_MA",
+  "Subj. health" =  "Health",
+  "RAVLR-DR" = "Delayed_recall_raw",
+  "z(RAVLT-DR)" = "Delayed_recall_z",
+  "TMT-B" = "TMT_B_raw",
+  "z(TMT-B)" = "TMT_B_z",
+  "BNT-30" = "BNT_30_raw",
+  "z(BNT-30)" = "BNT_30_z",
+  "Animal naming" = "VF_Animals_raw",
+  "z(Animal naming)" = "VF_Animals_z",
+  "Smoking" = "Smoking",
+  "Alcohol" =  "Alcoholing",
+  "Hypertension" = "Hypertension",
+  "Diabetes" = "Diabetes"
+)
 ```
 
 ## Data
+
+```{r data-import}
+# NOTE: data live in a freeze artifact at OSF
+raw_data <- midphysac::read_poster_data()
+
+# NOTE: data are trimmed at A2PA < 4 for this analysis
+df <- dplyr::filter(raw_data, A2PA <= "Active")
+```
 
 ---
 
@@ -43,27 +93,25 @@ library(patchwork)
 
 ---
 
-# 2 · SuperAging prevalence (row 2, column 1)
+# 2 · The activity ladder (row 2, column 1)
 
 ---
 
-# 3 · Episodic memory (row 2, column 1)
+
+# 3 · Cognition (row 2, column 2)
 
 ---
 
-# 4 · The activity ladder (row 2, column 1)
+
+# 4 · Where the groups differ, where they do not (row 3, column 1)
 
 ---
 
-# 5 · Where the groups differ, where they do not (row 2, column 1)
+# 5 · Export
 
 ---
 
-# 6 · Export
-
----
-
-# 7 · Session info
+# 6 · Session info
 
 ```{r session-info, echo = FALSE}
 sessioninfo::session_info()

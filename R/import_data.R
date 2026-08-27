@@ -27,14 +27,40 @@ import_data <- function(
   readxl::read_xlsx(file, sheet = sheet, na = "NA") |>
     dplyr::left_join(acts, by = c("ID...1" = "ID", "Study")) |>
     dplyr::select(
-      1, Study, Age, `Education-2-cat`, `PA...4`,
-      `Regular-PA`, `WHO-PA.y`, `Regular-PA-without walking, chores`, `Regular-PA-without walking, chores, gardening`,
-      MMSE, GDS15, GAI, FAQ, `Total-mental-activities`, Health, # outcomes
-      `Memory test`, RAVLT_delayed_recall, TMT_B_time, Spon_sem, VF_animals, # SuperAging variables raw scores
-      `SA-TMT-B-new`, `SA-BNT-new`, `SA-VF`, # SuperAging indicators
-      Z_RAVLT_PVLT_delayed_recall, Z_TMT_B_uds, Z_BNT_new, Z_VF_uds, # SuperAging variables z scores
-      Type_of_prevailing_occupation_during_life, Marital_status,
-      `Do_you_smoke?`, Hypertension, Diabetes # health-related covariates
+      1,
+      Study,
+      Age,
+      `Education-2-cat`,
+      BMI,
+      `PA...4`,
+      `Regular-PA`,
+      `WHO-PA.y`,
+      `Regular-PA-without walking, chores`,
+      `Regular-PA-without walking, chores, gardening`,
+      MMSE,
+      GDS15,
+      GAI,
+      FAQ,
+      `Total-mental-activities`,
+      Health,
+      `Memory test`,
+      RAVLT_delayed_recall,
+      TMT_B_time,
+      Spon_sem,
+      VF_animals,
+      `SA-TMT-B-new`,
+      `SA-BNT-new`,
+      `SA-VF`,
+      Z_RAVLT_PVLT_delayed_recall,
+      Z_TMT_B_uds,
+      Z_BNT_new,
+      Z_VF_uds,
+      Type_of_prevailing_occupation_during_life,
+      Marital_status,
+      `Do_you_smoke?`,
+      Hypertension,
+      Diabetes,
+      `Do_you_drink_more_than_0.2_litres_of_wine_or_0.5_litres_of_beer_or_0.04_litres_of_spirits_a_day?`
     ) |>
     dplyr::mutate(
       mPA = factor(
@@ -153,6 +179,20 @@ import_data <- function(
         Study == "NANOK" ~ 2 - `Regular-PA`,
         TRUE             ~ `Regular-PA-without walking, chores`
       )),
+      dplyr::across(
+        .cols = tidyselect::all_of(c(
+          "WHO-PA.y",
+          "Regular-PA-without walking, chores",
+          "Regular-PA-without walking, chores, gardening"
+        )),
+        .fns = as.factor
+      ),
+      Health = factor(
+        6 - Health,
+        levels = 1:5,
+        labels = rev(c("excellent", "very good", "good", "adequate", "bad")),
+        ordered = TRUE
+      ),
       Profession = factor(dplyr::case_when(
         Type_of_prevailing_occupation_during_life == 1 ~ "manual",
         Type_of_prevailing_occupation_during_life == 2 ~ "mostly manual",
@@ -172,14 +212,31 @@ import_data <- function(
         GAI > 10, 1, 0
       )),
       dplyr::across(
-        .cols = tidyselect::all_of(c("Do_you_smoke?", "Hypertension", "Diabetes")),
+        .cols = tidyselect::all_of(c(
+          "Do_you_smoke?",
+          "Hypertension",
+          "Diabetes",
+          "Do_you_drink_more_than_0.2_litres_of_wine_or_0.5_litres_of_beer_or_0.04_litres_of_spirits_a_day?"
+        )),
         .fns = \(x) factor(2 - x)
+      ),
+      A2PA = factor(
+        `PA...4`,
+        levels = 1:6,
+        labels = c(
+          "Athlete",
+          "Enthusiast",
+          "Active",
+          "Moving",
+          "Non-athlete",
+          "Discontinued"
+        ),
+        ordered = TRUE
       )
     ) |>
     # Re-naming variables:
     dplyr::rename(
       "ID" = "ID...1",
-      "A2PA" = "PA...4",
       "cPA_WHO" = "WHO-PA.y",
       "cPA_no_gardening" = "Regular-PA-without walking, chores, gardening",
       "Total_MA" = "Total-mental-activities",
@@ -198,10 +255,11 @@ import_data <- function(
       "VF_Animals_z" = "Z_VF_uds",
       "VF_Animals_SA" = "SA-VF",
       "VF_Animals_SA_comp" = "SA-VF-final",
-      "Smoking" = "Do_you_smoke?"
+      "Smoking" = "Do_you_smoke?",
+      "Alcoholing" = "Do_you_drink_more_than_0.2_litres_of_wine_or_0.5_litres_of_beer_or_0.04_litres_of_spirits_a_day?"
     ) |>
     dplyr::select(
-      ID, A2PA, mPA, Cosactiw, Age, Age_bin, Education,
+      ID, A2PA, mPA, Cosactiw, Age, Age_bin, Education, BMI,
       tidyselect::starts_with("cPA"),
       SA, SA_comp, Z_SA, MMSE, GDS15, GAI, FAQ, Depr, Anx,
       Total_MA, Health, Profession, Status,
@@ -210,7 +268,7 @@ import_data <- function(
       tidyselect::ends_with("_z"),
       tidyselect::ends_with("_SA"),
       tidyselect::ends_with("_comp"),
-      Smoking, Hypertension, Diabetes
+      Smoking, Hypertension, Diabetes, Alcoholing
     )
 }
 
