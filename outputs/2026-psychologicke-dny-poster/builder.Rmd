@@ -201,7 +201,7 @@ tab_sample
 
 # 2 · The activity ladder (row 2, column 1)
 
-```{r activit-ladder-plot}
+```{r activity-ladder-plot}
 # ---- 2 · The activity ladder (row 2, column 1) -------------------------------
 
 ## ---- r ladder-data ----
@@ -399,8 +399,427 @@ p_ladder
 
 ---
 
-
 # 3 · Cognition (row 2, column 2)
+
+```{r cognition-plot}
+# ---- 3 · Cognition (row 2, column 2) -----------------------------------------
+
+## ---- r cognition-data ----
+# The four domains that define SuperAging. Memory first: it is the finding.
+z_levels <- c("z(RAVLT-DR)", "z(TMT-B)", "z(BNT-30)", "z(Animal naming)")
+z_label  <- c("Delayed recall", "TMT-B", "BNT-30", "Animal naming")
+
+domains <-
+  df |>
+  select(A2PA, all_of(z_levels)) |>
+  pivot_longer(-A2PA, names_to = "domain", values_to = "z") |>
+  filter(!is.na(z)) |>
+  mutate(
+    d_i    = match(domain, z_levels),
+    domain = factor(z_label[d_i], levels = z_label),
+    A2PA   = factor(as.character(A2PA), levels = names(pal))
+  )
+
+# Mean and 95 % CI per group and domain, following the convention of the
+# earlier COSACTIW poster: violin = distribution, dot = mean, bar = 95 % CI.
+domain_mean <-
+  domains |>
+  summarise(
+    m  = mean(z),
+    se = sd(z) / sqrt(n()),
+    n  = n(),
+    .by = c(domain, A2PA)
+  ) |>
+  mutate(
+    lo = m - qt(.975, n - 1) * se,
+    hi = m + qt(.975, n - 1) * se
+  )
+
+# SuperAging prevalence
+sa <-
+  df |>
+  summarise(
+    k     = sum(SA == "1", na.rm = TRUE),
+    n     = sum(!is.na(SA)),
+    n_all = n(),
+    .by   = A2PA
+  ) |>
+  mutate(
+    p  = 100 * k / n,
+    lo = 100 * map2_dbl(k, n, \(k, n) prop.test(k, n, correct = FALSE)$conf.int[1]),
+    hi = 100 * map2_dbl(k, n, \(k, n) prop.test(k, n, correct = FALSE)$conf.int[2]),
+    A2PA = factor(as.character(A2PA), levels = names(pal))
+  )
+
+## ---- r cognition-tests ----
+# One-way ANOVA per domain with Tukey HSD post-hoc
+domain_tests <-
+  domains |>
+  nest_by(domain) |>
+  mutate(
+    fit  = list(aov(z ~ A2PA, data = data)),
+    tidy = list(summary(fit)[[1]]),
+    `F`  = tidy[["F value"]][1],
+    df1  = tidy[["Df"]][1],
+    df2  = tidy[["Df"]][2],
+    p    = tidy[["Pr(>F)"]][1],
+    pw   = list(TukeyHSD(fit)$A2PA)
+  ) |>
+  ungroup() |>
+  select(domain, `F`, df1, df2, p, pw)
+
+sa_test <- suppressWarnings(chisq.test(cbind(sa$k, sa$n - sa$k)))
+
+# Pairwise p-values for the memory domain, Enthusiast against the other two.
+# TukeyHSD names rows "<second>-<first>" in factor-level order.
+mem_pw <- domain_tests$pw[[1]]
+stopifnot(all(c("Enthusiast-Athlete", "Active-Enthusiast") %in% rownames(mem_pw)))
+p_ath  <- mem_pw["Enthusiast-Athlete", "p adj"]
+p_act  <- mem_pw["Active-Enthusiast", "p adj"]
+
+# Vectorised: these are called inside mutate() over all four domains.
+fmt_p  <- function(p) ifelse(p < .001, "*p* < .001", sprintf("*p* = %s", no0(p, 3)))
+fmt_pp <- function(p) ifelse(p < .001, "p < .001",   sprintf("p = %s",   no0(p, 3)))
+fmt_F  <- function(i) {
+  with(domain_tests[i, ],
+       sprintf("*F*(%d, %d) = %s, %s", df1, df2, no0(F, 2), fmt_p(p)))
+}
+
+## ---- r cognition-plot ----
+Z_BOT <- min(domains$z, na.rm = TRUE)
+BR    <- Z_BOT - 0.45
+LAB   <- 0.10   # gap between line and label top
+STAG  <- 1.10   # vertical offset of the second bracket
+
+mem_brackets <- data.frame(
+  domain = factor(z_label[1], levels = z_label),
+  x      = c(1, 2),
+  xend   = c(2, 3),
+  y      = c(BR, BR - STAG),
+  lab    = c(fmt_pp(p_ath), fmt_pp(p_act))
+)
+
+# Pairwise differences in SuperAging prevalence, with Newcombe-style intervals
+# from the same prop.test family as the proportions themselves.
+CL <- 1 - 0.05 / 3   # Bonferroni level for three pairwise contrasts
+
+sa_pairs <- data.frame(
+  a = c("Enthusiast", "Enthusiast", "Athlete"),
+  b = c("Athlete", "Active", "Active")
+) |>
+  mutate(
+    lab = paste(a, "-", b),
+    d   = map2_dbl(a, b, \(a, b) {
+      i <- match(c(a, b), sa$A2PA)
+      100 * (sa$k[i[1]] / sa$n[i[1]] - sa$k[i[2]] / sa$n[i[2]])
+    }),
+    # Bonferroni level for the three contrasts, so "interval excludes zero" IS
+    # the adjusted test and the colour cue cannot contradict the geometry.
+    lo = map2_dbl(a, b, \(a, b) {
+      i <- match(c(a, b), sa$A2PA)
+      100 * prop.test(sa$k[i], sa$n[i], correct = FALSE, conf.level = CL)$conf.int[1]
+    }),
+    hi = map2_dbl(a, b, \(a, b) {
+      i <- match(c(a, b), sa$A2PA)
+      100 * prop.test(sa$k[i], sa$n[i], correct = FALSE, conf.level = CL)$conf.int[2]
+    }),
+    sig = lo > 0 | hi < 0
+  ) |>
+  mutate(lab = factor(lab, levels = rev(lab)))
+
+p_sa <-
+  ggplot(
+    sa,
+    aes(x = A2PA, y = p, colour = A2PA)
+  ) +
+  geom_linerange(
+    aes(ymin = lo, ymax = hi),
+    linewidth = 2.8,
+    alpha = 0.45,
+    lineend = "round"
+  ) +
+  geom_point(
+    aes(fill = A2PA, shape = A2PA),
+    size = 8.5,
+    colour = "white",
+    stroke = 1.8
+  ) +
+  geom_text(
+    aes(label = sprintf("%.0f %%", p)),
+    nudge_x = 0.22,
+    hjust = 0,
+    size = 25 / .pt,
+    fontface = "bold",
+    colour = ink,
+    family = FAM
+  ) +
+  scale_colour_manual(
+    values = pal,
+    guide = "none"
+  ) +
+  scale_fill_manual(
+    values = pal,
+    guide = "none"
+  ) +
+  scale_shape_manual(
+    values = SHP,
+    guide = "none"
+  ) +
+  scale_x_discrete(
+    expand = expansion(add = c(0.5, 1.1))
+  ) +
+  scale_y_continuous(
+    labels = \(v) paste0(v, " %"),
+    expand = expansion(mult = c(0.18, 0.18))
+  ) +
+  labs(
+    x = NULL,
+    y = NULL,
+    subtitle = "SuperAging"
+  ) +
+  theme_minimal(
+    base_size = 26,
+    base_family = FAM
+  ) +
+  theme(
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor   = element_blank(),
+    panel.grid.major.y = element_line(colour = hair, linewidth = 0.4),
+    axis.text.x  = element_blank(),
+    axis.text.y  = element_text(colour = grey, size = 23),
+    axis.ticks   = element_blank(),
+    plot.subtitle = element_text(
+      size = 25,
+      face = "bold",
+      colour = ink,
+      margin = margin(b = 6),
+      hjust = 0.5
+    )
+  )
+
+p_sa_diff <-
+  ggplot(
+    sa_pairs,
+    aes(x = d, y = lab)
+  ) +
+  geom_vline(
+    xintercept = 0,
+    colour = grey,
+    linewidth = 0.7,
+    linetype = "22"
+  ) +
+  geom_linerange(
+    aes(xmin = lo, xmax = hi, colour = sig),
+    linewidth = 2.8,
+    alpha = 0.45,
+    lineend = "round"
+  ) +
+  geom_point(
+    aes(colour = sig, shape = sig),
+    size = 7,
+    fill = "white",
+    stroke = 1.8
+  ) +
+  scale_colour_manual(
+    values = c(`TRUE` = ink, `FALSE` = grey),
+    guide = "none"
+  ) +
+  scale_shape_manual(
+    values = c(`TRUE` = 19, `FALSE` = 21),
+    guide = "none"
+  ) +
+  scale_x_continuous(
+    breaks = scales::breaks_width(20),
+    expand = expansion(mult = c(0.12, 0.12))
+  ) +
+  labs(
+    x = NULL,
+    y = NULL,
+    subtitle = "Pairwise difference (pp)"
+  ) +
+  theme_minimal(
+    base_size = 26,
+    base_family = FAM
+  ) +
+  theme(
+    panel.grid.major.y = element_blank(),
+    panel.grid.minor   = element_blank(),
+    panel.grid.major.x = element_line(colour = hair, linewidth = 0.4),
+    axis.text.y  = element_text(colour = ink, size = 23, hjust = 1),
+    axis.text.x  = element_text(colour = grey, size = 23),
+    axis.ticks   = element_blank(),
+    plot.subtitle = element_text(
+      size = 25,
+      face = "bold",
+      colour = ink,
+      margin = margin(b = 6),
+      hjust = 0.5
+    )
+  )
+
+p_dom <-
+  ggplot(
+    domains,
+    aes(x = A2PA, y = z)
+  ) +
+  geom_hline(
+    yintercept = 0,
+    colour = grey,
+    linewidth = 0.7,
+    linetype = "22"
+  ) +
+  geom_violin(
+    aes(fill = A2PA, colour = A2PA),
+    alpha = 0.30,
+    linewidth = 1.1,
+    width = 0.9,
+    trim = FALSE
+  ) +
+  geom_linerange(
+    data = domain_mean,
+    aes(y = m, ymin = lo, ymax = hi, colour = A2PA),
+    linewidth = 2.8,
+    lineend = "round"
+  ) +
+  geom_point(
+    data = domain_mean,
+    aes(y = m, fill = A2PA, shape = A2PA),
+    size = 7,
+    colour = "white",
+    stroke = 1.6
+  ) +
+  # Memory only; annotate() ignores `data`, so these need their own facet key.
+  geom_segment(
+    data = mem_brackets,
+    aes(x = x, xend = xend, y = y, yend = y),
+    inherit.aes = FALSE,
+    colour = ink,
+    linewidth = 0.9
+  ) +
+  geom_text(
+    data = mem_brackets,
+    aes(x = (x + xend) / 2, y = y - LAB, label = lab),
+    inherit.aes = FALSE,
+    size = 22 / .pt,
+    colour = ink,
+    family = FAM
+  ) +
+  facet_wrap(
+    ~ domain,
+    nrow = 1
+  ) +
+  scale_colour_manual(
+    values = pal,
+    name = NULL
+  ) +
+  scale_fill_manual(
+    values = pal,
+    name = NULL
+  ) +
+  scale_shape_manual(
+    values = SHP,
+    name = NULL
+  ) +
+  scale_y_continuous(
+    expand = expansion(mult = c(0.26, 0.05))
+  ) +
+  labs(
+    x = NULL,
+    y = "Domain z score"
+  ) +
+  guides(
+    colour = guide_legend(override.aes = list(size = 9, stroke = 1.8, alpha = 1))
+  ) +
+  theme_minimal(
+    base_size = 26,
+    base_family = FAM
+  ) +
+  theme(
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor   = element_blank(),
+    panel.grid.major.y = element_line(colour = hair, linewidth = 0.4),
+    panel.spacing.x    = unit(20, "pt"),
+    strip.text   = element_text(
+      size = 25,
+      face = "bold",
+      colour = ink,
+      hjust = 0.5,
+      margin = margin(b = 10)
+    ),
+    axis.text.x  = element_blank(),
+    axis.text.y  = element_text(colour = grey, size = 23),
+    axis.title.y = element_text(colour = grey, size = 23, margin = margin(r = 8)),
+    axis.ticks   = element_blank(),
+    legend.position      = "bottom",
+    legend.direction     = "horizontal",
+    legend.text   = element_text(size = 26, face = "bold", colour = ink),
+    legend.margin = margin(t = 4)
+  )
+
+cog_finding <- sprintf(
+  paste(
+    "**Enthusiasts reach SuperAging about twice as often,",
+    "courtesy of their superior memory.**",
+    "SuperAging prevalence differs betweeen groups (%s);",
+    "delayed recall separates them (%s) while the other three domains do not (all *p* > %s)."
+  ),
+  sprintf(
+    "&#967;<sup>2</sup>(%d) = %s, %s",
+    sa_test$parameter,
+    no0(unname(sa_test$statistic), 1),
+    fmt_p(sa_test$p.value)
+  ),
+  fmt_F(1),
+  no0(min(domain_tests$p[-1]), 2)
+)
+
+# Denominators are computed, not assumed: SA and the domain scores each have
+# their own missingness.
+n_dom <- range(summarise(domain_mean, n = sum(n), .by = domain)$n)
+
+cog_how <- sprintf(
+  paste(
+    "Violins represent z-score distributions against the appropriate norms, dot the mean,",
+    "bar its 95%% CI; the dashed line is the normative average.",
+    "Pairwise differences in prevalence (top right) show %.1f%% intervals, Bonferroni",
+    "adjusted for the three contrasts, so a filled mark indicate statistically significant differences.",
+    "Domain post-hoc contrasts presented in the Delayed recall panel are Tukey HSDs.",
+    "SuperAging is defined *by* the four presented domains, so the lower",
+    "row explains the upper one rather than confirming it independently.",
+    "Of %d women, SuperAging status was determinable for %d and domain scores",
+    "for %s."
+  ),
+  100 * CL,
+  nrow(df),
+  sum(sa$n),
+  if (n_dom[1] == n_dom[2]) sprintf("%d", n_dom[1])
+  else sprintf("%d to %d depending on domain", n_dom[1], n_dom[2])
+)
+
+p_cognition <-
+  patchwork::wrap_plots(
+    patchwork::wrap_plots(p_sa, p_sa_diff, ncol = 2, widths = c(1, 1.3)),
+    p_dom,
+    ncol = 1, heights = c(1, 2.3)
+  ) +
+  patchwork::plot_annotation(
+    caption = paste(cog_finding, cog_how),
+    theme = theme(
+      plot.caption.position = "plot",
+      plot.caption = ggtext::element_textbox_simple(
+        size = 22,
+        colour = grey,
+        family = FAM,
+        lineheight = 1.3,
+        margin = margin(t = 14),
+        halign = 0
+      ),
+      plot.margin = margin(6, 10, 4, 4)
+    )
+  )
+
+p_cognition
+```
 
 ---
 
