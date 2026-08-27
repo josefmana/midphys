@@ -201,6 +201,202 @@ tab_sample
 
 # 2 · The activity ladder (row 2, column 1)
 
+```{r activit-ladder-plot}
+# ---- 2 · The activity ladder (row 2, column 1) -------------------------------
+
+## ---- r ladder-data ----
+pa_levels <- c(
+  "Current PA (WHO)",
+  "Current PA (excl. walking, chores)",
+  "Current PA (excl. walking, chores, gardening)"
+)
+
+# NOTE: WHO is the demanding criterion: it needs BOTH moderate-or-intense
+# intensity AND >= 2.5 h/week. The other two need only > 0 hours, at any
+# intensity of a progressively narrower list of activity types.
+pa_label <- c(
+  "WHO-recommended\nphysical activity",
+  "Any PA excluding\nwalking and chores",
+  "Any PA excluding\nwalking, chores and gardening"
+)
+
+ladder <-
+  df |>
+  select(A2PA, all_of(pa_levels)) |>
+  pivot_longer(-A2PA, names_to = "measure", values_to = "meets") |>
+  mutate(meets = as.integer(as.character(meets))) |>
+  summarise(k = sum(meets), n = n(), .by = c(A2PA, measure)) |>
+  mutate(
+    # Wilson score interval = prop.test(correct = FALSE);
+    # Wald is unusable here because 91/92 pushes its upper limit past 100 %.
+    p  = 100 * k / n,
+    lo = 100 * map2_dbl(k, n, \(k, n) prop.test(k, n, correct = FALSE)$conf.int[1]),
+    hi = 100 * map2_dbl(k, n, \(k, n) prop.test(k, n, correct = FALSE)$conf.int[2]),
+    m_i   = match(measure, pa_levels),
+    label = factor(pa_label[m_i], levels = pa_label),
+    A2PA  = factor(as.character(A2PA), levels = names(pal))
+  )
+
+## ---- r ladder-tests ----
+ladder_tests <-
+  ladder |>
+  arrange(m_i, A2PA) |>
+  summarise(tab = list(cbind(yes = k, no = n - k)), .by = c(m_i, measure)) |>
+  arrange(m_i) |>
+  mutate(
+    chi     = map(tab, \(t) suppressWarnings(chisq.test(t))),
+    X2      = map_dbl(chi, \(x) unname(x$statistic)),
+    dfree   = map_dbl(chi, \(x) unname(x$parameter)),
+    p_chi   = map_dbl(chi, \(x) x$p.value),
+    min_exp = map_dbl(chi, \(x) min(x$expected)),  # < 5 invalidates the approximation
+    p_fish  = map_dbl(tab, \(t) fisher.test(t)$p.value)
+  )
+
+# APA-style bounded statistic: strip the leading zero.
+no0 <- function(x, digits = 2) {
+  sub("^(-?)0\\.", "\\1.", sprintf(paste0("%.", digits, "f"), x))
+}
+fmt_p  <- function(p) if (p < .001) "*p* < .001" else sprintf("*p* = %s", no0(p, 3))
+fmt_x2 <- function(i) {
+  with(ladder_tests[i, ],
+       sprintf("&#967;<sup>2</sup>(%d) = %s, %s", dfree, no0(X2, 1), fmt_p(p_chi)))
+}
+
+## ---- r ladder-plot ----
+FAM <- "Helvetica Neue"
+Y0  <- 50
+SHP <- c(Athlete = 21, Enthusiast = 22, Active = 24) # secondary encoding
+
+ladder_finding <- sprintf(
+  paste(
+    "**A2PA identity indicates what the women do, not how much.**",
+    "Meeting the WHO-recommended level does not separate the groups (%s);",
+    "doing any activity beyond walking and chores does (%s),",
+    "and excluding gardening widens the gap (%s)."
+  ),
+  fmt_x2(1),
+  fmt_x2(2),
+  fmt_x2(3)
+)
+
+ladder_how <- sprintf(
+  paste(
+    "All three panels score the same %d women.",
+    "WHO criterion counts at least 2.5 h/week of moderate or vigorous activity of any type;",
+    "the other two count any amount at any intensity, of a narrowing list of types.",
+    "Dots are proportions, bars 95%% Wilson intervals, axis truncated at %d%%.",
+    "Smallest expected count in the middle panel is %s. Fisher's exact test agree with &#967;<sup>2</sup> (*p* = %s)."
+  ),
+  sum(ladder$n[ladder$m_i == 1]),
+  Y0,
+  no0(ladder_tests$min_exp[2], 1),
+  no0(ladder_tests$p_fish[2], 3)
+)
+
+p_ladder <-
+  ggplot(
+    ladder,
+    aes(x = A2PA, y = p, colour = A2PA)
+  ) +
+  geom_linerange(
+    aes(ymin = lo, ymax = hi),
+    linewidth = 2.8,
+    alpha = 0.45,
+    lineend = "round"
+  ) +
+  geom_point(
+    aes(fill = A2PA, shape = A2PA),
+    size = 8.5,
+    colour = "white",
+    stroke = 1.8
+  ) +
+  # Every point is labelled: the two near-identical WHO values sit at different
+  # x positions, so their labels separate horizontally.
+  geom_text(
+    aes(label = sprintf("%.0f %%", p)),
+    nudge_x = 0.25,
+    hjust = 0,
+    size = 25 / .pt,
+    fontface = "bold",
+    colour = ink,
+    family = FAM
+  ) +
+  facet_wrap(
+    ~ label,
+    nrow = 1
+  ) +
+  scale_colour_manual(
+    values = pal,
+    name = NULL
+  ) +
+  scale_fill_manual(
+    values = pal,
+    name = NULL
+  ) +
+  scale_shape_manual(
+    values = SHP,
+    name = NULL
+  ) +
+  scale_x_discrete(
+    expand = expansion(add = c(0.55, 1.5))
+  ) +
+  scale_y_continuous(
+    limits = c(Y0, 100),
+    breaks = seq(Y0, 100, 10),
+    labels = \(v) paste0(v, " %"),
+    expand = expansion(mult = c(0.03, 0.05))
+  ) +
+  labs(
+    x = NULL,
+    y = "Percentage of women meeting the criterion",
+    caption = paste(ladder_finding, ladder_how)
+  ) +
+  # colour, fill and shape all map to A2PA, so ggplot merges them into one
+  # legend; override.aes must be given once or it warns about duplication.
+  guides(
+    colour = guide_legend(override.aes = list(size = 9, stroke = 1.8))
+  ) +
+  theme_minimal(
+    base_size = 26,
+    base_family = FAM
+  ) +
+  theme(
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor   = element_blank(),
+    panel.grid.major.y = element_line(colour = hair, linewidth = 0.4),
+    panel.spacing.x    = unit(26, "pt"),
+    strip.text   = element_text(
+      size = 24,
+      face = "bold",
+      colour = ink,
+      lineheight = 1.15,
+      hjust = 0,
+      margin = margin(b = 12)
+    ),
+    axis.text.x  = element_blank(),
+    axis.text.y  = element_text(colour = grey, size = 24),
+    axis.title.y = element_text(colour = grey, size = 24, margin = margin(r = 10)),
+    axis.ticks   = element_blank(),
+    # Bottom-centre of the plotting region, which is the middle facet.
+    # ggplot2 >= 3.5 wants legend.position = "inside" + legend.position.inside.
+    legend.position      = c(0.5, 0.02),
+    legend.justification = c(0.5, 0),
+    legend.direction     = "horizontal",
+    legend.background    = element_rect(fill = "white", colour = NA),
+    legend.text   = element_text(size = 26, face = "bold", colour = ink),
+    legend.margin = margin(4, 8, 4, 8),
+    plot.caption.position = "plot",
+    # Wrapping caption, following the ECVP builder's two-tier convention.
+    plot.caption = ggtext::element_textbox_simple(
+      size = 22, colour = grey, family = FAM, lineheight = 1.3,
+      margin = margin(t = 18), halign = 0
+    ),
+    plot.margin = margin(6, 10, 4, 4)
+  )
+
+p_ladder
+```
+
 ---
 
 
