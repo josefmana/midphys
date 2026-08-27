@@ -2,7 +2,7 @@
 % Please edit documentation in R/norms.R
 \name{extract_thresholds}
 \alias{extract_thresholds}
-\title{Find memory thresholds for superaging}
+\title{Find memory thresholds for SuperAging}
 \usage{
 extract_thresholds(
   pvlt_data_file,

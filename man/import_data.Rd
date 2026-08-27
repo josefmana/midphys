@@ -4,13 +4,16 @@
 \alias{import_data}
 \title{Import data for analysis}
 \usage{
-import_data(file, sheet, norms, thresholds, thres_type = "mean")
+import_data(file, sheet, acts, norms, thresholds, thres_type = "mean")
 }
 \arguments{
 \item{file}{Character. Path to raw data XLSX file.}
 
 \item{sheet}{Character or numeric. Denotes sheet where the
 data resides inside of \code{file}.}
+
+\item{acts}{Tibble or data.frame. Activity values from COBRA-B as
+computed by \code{data-raw/PA_pipeline.R}.}
 
 \item{norms}{Tibble or data.frame. Normative values for scoring
 memory tasks. Computed by \code{extract_thresholds}.}
@@ -21,7 +24,7 @@ values of  memory tasks. Computed by \code{extract_thresholds}.}
 \item{thres_type}{Character.}
 }
 \value{
-A tibble with following columns:
+A tibble with relevant columns.
 }
 \description{
 Reads, pre-processes, and cleans data for analysis.

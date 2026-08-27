@@ -2,19 +2,45 @@
 % Please edit documentation in R/draw_dag.R
 \name{draw_dag}
 \alias{draw_dag}
-\title{Draw a directed acyclic graphs}
+\title{Draw a directed acyclic graph (STUB -- always fails)}
 \usage{
-draw_dag(plot = TRUE)
+draw_dag(plot = TRUE, ...)
 }
 \arguments{
-\item{plot}{Logical. Should ggplot be returned (\code{TRUE}, default) or
-tidy_daggity object (\code{FALSE}).}
+\item{plot}{Logical. Unused. Retained so that existing call sites reach the
+error below rather than an argument-matching error.}
+
+\item{...}{Unused. Retained for the same reason.}
 }
 \value{
-Directed acyclic graph representing causal assumptions
-for the analysis.
+Nothing. Always raises a condition of class
+\code{midphysac_stub_error}.
 }
 \description{
-Takes in sets of covariates derived by \code{adjustment_table}
-and changes them to equations that can be used as \code{formula}.
+Deliberately non-functional. The graph this function used to return is the
+causal model of the \emph{Acta Psychologica} brief report, in which the exposure
+\code{mPA} was cohort membership (COSACTIW vs. NANOK) standing in for sustained
+midlife physical activity. Commit 7756455 redefined \code{mPA} as a
+dichotomisation of attitudes toward physical activity (\code{A2PA < 4}, levels
+\code{PAW} / \code{non-PAW}) on the pooled COSACTIW + KOKOSA sample and left the graph
+untouched. The graph is therefore no longer a statement about the data the
+pipeline now carries:
+}
+\details{
+\itemize{
+\item it has no A2PA node at all;
+\item its \code{mPA -> cPA} arrow asserts a midlife-to-later-life temporal ordering
+that a concurrently measured attitude does not have;
+\item its selection node \code{S} represents recruitment into COSACTIW, not survival
+to age 80+ and participation in either cohort.
+}
+
+The replacement is built under milestone M1, from the A2PA research
+questions, and only after the A2PA instrument itself is documented. Until
+then this function raises an error so that no downstream target, figure or
+manuscript can quietly inherit the Acta assumptions.
+}
+\seealso{
+\verb{git show v1.0.0:R/draw_dag.R} for the Acta implementation,
+archived at Zenodo 10.5281/zenodo.20339954.
 }

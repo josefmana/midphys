@@ -2,13 +2,14 @@
 ^\.Rproj\.user$
 ^LICENSE\.md$
 
-^data-raw$
 ^_targets.R$
 ^_targets.yaml$
+
 ^\.positai$
 ^\.claude$
 
-^\manuscript$
-^\preregistration$
-^\data-raw$
+^_texts$
+^manuscript$
+^preregistration$
+^data-raw$
 ^_targets*$

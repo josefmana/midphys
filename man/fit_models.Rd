@@ -4,22 +4,23 @@
 \alias{fit_models}
 \title{Fit regression models}
 \usage{
-fit_models(data, specs, log_1 = c("GDS15", "GAI"), contr = TRUE)
+fit_models(data, specs, contr = TRUE, match = NULL)
 }
 \arguments{
 \item{data}{Tibble or data.frame.}
 
 \item{specs}{Tibble or data.frame.}
 
-\item{log_1}{Character. Which variables \code{y} should be
-analysed as their \code{log(y+1)} versions? Defaults to
-\code{c("GDS15","GAI")}.}
-
 \item{contr}{Logical. Set sum contrasts to factors to
 avoid multicollinearity? Defaults to \code{TRUE}.}
+
+\item{match}{List or \code{NULL}. If provided, it will be
+used for propensity-scores weighted analysis (denoted
+"g-computation" in \code{specs}).}
 }
 \value{
-A named nested list with regression models.
+Nested named list with regression models (fits)
+and transformation objects (transforms) if applicable.
 }
 \description{
 Using table of adjustments derived via
