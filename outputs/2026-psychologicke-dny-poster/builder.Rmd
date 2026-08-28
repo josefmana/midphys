@@ -32,6 +32,7 @@ library(purrr)
 library(stringr)
 library(gt)
 library(patchwork)
+library(english)
 
 # Data import
 library(midphysac)
@@ -823,8 +824,304 @@ p_cognition
 
 ---
 
-
 # 4 · Where the groups differ, where they do not (row 3, column 1)
+
+```{r health-table}
+# ---- 4 · Health and mental activity (row 3, column 1) -----------------------
+
+## ---- r health-spec ----
+health_spec <- tibble::tribble(
+  ~var,                ~kind,   ~dir, ~block,
+  "GDS-15",            "cont",   -1L, "Mental health",
+  "GAI-SF",            "cont",   -1L, "Mental health",
+  "FAQ",               "cont",   -1L, "Mental health",
+  "Subj. health",      "cont",   +1L, "Subjective health",
+  "Mental activities", "cont",   +1L, "Mental activity",
+  "BMI",               "cont",   -1L, "Metabolic and lifestyle risk",
+  "Hypertension",      "bin",    -1L, "Metabolic and lifestyle risk",
+  "Diabetes",          "bin",    -1L, "Metabolic and lifestyle risk",
+  "Smoking",           "bin",    -1L, "Metabolic and lifestyle risk",
+  "Alcohol",           "bin",    -1L, "Metabolic and lifestyle risk"
+) |>
+  mutate(
+    block = factor(block, levels = unique(block)),
+    var   = factor(var, levels = var)
+  )
+
+## ---- r health-data ----
+# Binary measures may arrive as 0/1, as "0"/"1", or as No/Yes; anything else is
+# an error rather than a silent coercion.
+to01 <- function(x) {
+  u <- sort(unique(as.character(x[!is.na(x)])))
+  if (all(u %in% c("0", "1"))) {
+    as.integer(as.character(x))
+  } else if (all(tolower(u) %in% c("no", "yes"))) {
+    as.integer(tolower(as.character(x)) == "yes")
+  } else {
+    stop("Unrecognised binary coding: ", paste(u, collapse = "/"), call. = FALSE)
+  }
+}
+
+health <-
+  df |>
+  # Self-rated health is stored high = poor; 6 - level puts it with the rest.
+  mutate(`Subj. health` = 6 - as.numeric(`Subj. health`)) |>
+  select(A2PA, all_of(as.character(health_spec$var))) |>
+  # Columns arrive as a mix of numeric, factor and character, so pivot through
+  # character and parse per measure below rather than asking vctrs to unify them.
+  pivot_longer(
+    -A2PA,
+    names_to = "var",
+    values_to = "raw",
+    values_transform = as.character
+  ) |>
+  left_join(health_spec, by = "var") |>
+  filter(!is.na(raw)) |>
+  mutate(v = if (kind[1] == "bin") to01(raw) else as.numeric(raw), .by = var) |>
+  mutate(
+    var  = factor(var, levels = levels(health_spec$var)),
+    A2PA = factor(as.character(A2PA), levels = names(pal))
+  )
+
+health_n <-
+  health |>
+  summarise(n = n(), .by = var)
+
+## ---- health-tests ----
+# Omnibus test per measure, native to the measure: one-way ANOVA for the
+# continuous ones, chi-square for the binary ones. Deliberately unadjusted as
+# the claim here is mostly of ABSENCE, and multiplicity correction only makes a
+# null easier to obtain, so adjusting would be arguing in our own favour.
+health_tests <-
+  health |>
+  nest_by(var, kind) |>
+  mutate(
+    p = if (kind == "cont") {
+      summary(aov(v ~ A2PA, data = data))[[1]][["Pr(>F)"]][1]
+    } else {
+      suppressWarnings(chisq.test(table(data$A2PA, data$v))$p.value)
+    }
+  ) |>
+  ungroup() |>
+  select(var, kind, p) |>
+  mutate(
+    lab = ifelse(p < .001, "p < .001", paste0("p = ", no0(p, 3))),
+    sig = p < .05
+  )
+
+## ---- r health-effects ----
+# Eta-squared: the share of a measure's variance accounted for by identity. For
+# a 0/1 outcome this is the natural analogue of the continuous case and is on
+# the SAME scale, which is what lets both kinds share one column.
+eta2 <- function(y, g) {
+  a <- anova(stats::lm(y ~ g))
+  a[["Sum Sq"]][1] / sum(a[["Sum Sq"]])
+}
+
+health_es <-
+  health |>
+  summarise(est = eta2(v, A2PA), .by = var) |>
+  mutate(eta = sub("^0\\.", ".", sprintf("%.3f", est)))
+
+## ---- r health-table-data ----
+tab_rows <-
+  health |>
+  summarise(
+    txt = if (kind[1] == "bin") sprintf("%d (%.0f %%)", sum(v), 100 * mean(v))
+          else                  sprintf("%.1f (%.2f)", mean(v), sd(v)),
+    .by = c(block, var, kind, A2PA)
+  ) |>
+  pivot_wider(
+    names_from = A2PA,
+    values_from = txt
+  ) |>
+  left_join(
+    select(health_es, var, eta),
+    by = "var"
+  ) |>
+  left_join(
+    select(health_tests, var, lab, sig),
+    by = "var"
+  ) |>
+  arrange(var) |>
+  mutate(
+    block = as.character(block),
+    var = as.character(var)
+  ) |>
+  select(
+    block,
+    var,
+    all_of(names(pal)),
+    eta,
+    lab,
+    sig
+  )
+
+grp_n <-
+  df |>
+  count(A2PA) |>
+  tibble::deframe()
+
+## ---- r health-caption ----
+# The headline is a claim and is written by hand; it must be re-checked against
+# the numbers whenever the freeze changes. Everything after it is generated, so
+# the sentence cannot contradict the table.
+HEADLINE <- "**The groups are mostly comparable across health measures.**"
+
+andify <- function(x) {
+  if (length(x) <= 1) return(paste(x, collapse = ""))
+  paste(paste(x[-length(x)], collapse = ", "), "and", x[length(x)])
+}
+
+sig_i  <- order(health_tests$p)[seq_len(sum(health_tests$sig))]
+null_p <- health_tests$p[!health_tests$sig]
+
+health_finding <- paste(
+  HEADLINE,
+  if (length(sig_i) == 0) {
+    sprintf(
+      "None of the %s measures differs significantly across the three identities (all *p* > %s).",
+      english(nrow(health_tests)),
+      no0(min(null_p), 2)
+    )
+  } else {
+    sprintf(
+      "Of the %s measures, %s %s significantly between the identities (%s); the other %s %s not (*p*%s > %s).",
+      english(nrow(health_tests)),
+      andify(as.character(tolower(health_tests$var[sig_i]))),
+      if (length(sig_i) == 1) "differs" else "differ",
+      paste(gsub("^p", "*p*", health_tests$lab[sig_i]), collapse = "; "),
+      english(length(null_p)),
+      if (length(null_p) == 1) "does" else "do",
+      if (length(null_p) == 1) "" else "s",
+      no0(min(null_p), 2)
+    )
+  }
+)
+
+## ---- r health-table-gt ----
+lbl <- function(g) gt::html(sprintf(
+  "%s<br><span style='font-size:19px;font-weight:600;text-transform:none'>n = %d</span>",
+  g, grp_n[[g]]
+))
+
+tab_health <-
+  tab_rows |>
+  select(-sig) |>
+  gt::gt(groupname_col = "block") |>
+  gt::cols_label(
+    var = "",
+    Athlete = lbl("Athlete"),
+    Enthusiast = lbl("Enthusiast"),
+    Active = lbl("Active"),
+    eta = gt::html("<span style='text-transform:none'>&eta;<sup>2</sup></span>"),
+    lab = "Test"
+  ) |>
+  gt::cols_align("left", columns = var) |>
+  gt::cols_align("center", columns = c(all_of(names(pal)), eta, lab)) |>
+  # One spanner over the three identity columns, which carries the colour rule
+  # and the M (SD) / n (%) footnote
+  gt::tab_spanner(label = "A2PA identity", columns = all_of(names(pal))) |>
+  # Measure names sit inside their block. cell_text(indent =) needs gt >= 0.9;
+  # on an older gt, drop this call and pad the strings instead.
+  gt::tab_style(
+    style = gt::cell_text(indent = gt::px(24)),
+    locations = gt::cells_body(columns = var)
+  ) |>
+  gt::tab_style(
+    style = gt::cell_text(color = grey, weight = "bold"),
+    locations = gt::cells_column_labels()
+  )
+
+# Group columns carry the identity colour in the same way as the sample table
+# in section 1
+for (g in names(pal)) {
+  tab_health <-
+    tab_health |>
+    gt::tab_style(
+      style = list(
+        gt::cell_fill(color = tint(pal[[g]], 0.13)),
+        gt::cell_borders(sides = "top", color = pal[[g]], weight = gt::px(6))
+      ),
+      locations = gt::cells_column_labels(columns = all_of(g))
+    ) |>
+    gt::tab_style(
+      style = gt::cell_fill(color = tint(pal[[g]], 0.13)),
+      locations = gt::cells_body(columns = all_of(g))
+    )
+}
+
+tab_health <-
+  tab_health |>
+  gt::tab_style(
+    style = gt::cell_text(color = grey, weight = "bold"),
+    locations = gt::cells_column_spanners()
+  ) |>
+  # Rows whose omnibus test clears .05 are set bold.
+  gt::tab_style(
+    style = gt::cell_text(weight = "bold"),
+    locations = gt::cells_body(rows = which(tab_rows$sig))
+  ) |>
+  gt::tab_source_note(gt::md(sprintf(
+    "%s Of %d women, %s contributed to each measure.",
+    health_finding, nrow(df),
+    local({
+      r <- range(health_n$n)
+      if (r[1] == r[2]) sprintf("all %d", r[1])
+      else sprintf("%d to %d", r[1], r[2])
+    })
+  ))) |>
+  gt::tab_footnote(
+    footnote = gt::html(paste(
+      "&eta;<sup>2</sup>: the share of that measure's",
+      "variance accounted for by identity."
+    )),
+    locations = gt::cells_column_labels(columns = eta)
+  ) |>
+  gt::tab_footnote(
+    footnote  = gt::html(paste(
+      "One-way ANOVA (continuous variables) or &chi;<sup>2</sup> (binary variables),",
+      "one per row, unadjusted for multiple comparisons."
+    )),
+    locations = gt::cells_column_labels(columns = lab)
+  ) |>
+  gt::tab_footnote(
+    footnote  = gt::html("M (SD) for continuous measures, n (%) for yes/no ones."),
+    locations = gt::cells_column_spanners(spanners = "A2PA identity")
+  ) |>
+  gt::tab_options(
+    table.font.names                  = "Helvetica Neue",
+    table.font.size                   = gt::px(26),
+    table.font.color                  = ink,
+    table.width                       = gt::pct(100),
+    table.border.top.style            = "none",
+    table.border.bottom.style         = "none",
+    table_body.hlines.style           = "none",
+    column_labels.font.size           = gt::px(23),
+    column_labels.font.weight         = "bold",
+    column_labels.text_transform      = "uppercase",
+    column_labels.border.top.style    = "none",
+    column_labels.border.bottom.color = hair,
+    column_labels.border.bottom.width = gt::px(2),
+    row_group.font.size               = gt::px(21),
+    row_group.font.weight             = "bold",
+    row_group.text_transform          = "uppercase",
+    row_group.border.top.style        = "none",
+    row_group.border.bottom.style     = "none",
+    row_group.padding                 = gt::px(8),
+    data_row.padding                  = gt::px(3),
+    footnotes.font.size               = gt::px(19),
+    # Footmark symbols instead of digits or letters: a digit marker after the
+    # eta label renders as a second superscript next to its exponent, and a
+    # letter marker would be capitalised by column_labels.text_transform.
+    footnotes.marks                   = "standard",
+    footnotes.multiline               = FALSE,
+    source_notes.font.size            = gt::px(19),
+    source_notes.border.lr.style      = "none"
+  )
+
+tab_health
+```
 
 ---
 
