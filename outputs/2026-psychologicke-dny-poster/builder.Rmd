@@ -71,6 +71,297 @@ df <- filter(raw_data, A2PA <= "Active")
 
 ---
 
+# Language
+
+The poster ships in Czech and English. **Only text changes** with langueage,
+while every number, test, figure and layout constant is shared. Set `LANG` and
+re-knit to change the language. Exports land in a per-language folder, so an
+English run never overwrites a Czech one and vice versa.
+
+```{r language-setting}
+# "en" or "cs". English is the default.
+LANG <- "cs"
+```
+
+```{r language-dictionary}
+# One entry per translatable string, keyed by a stable name.
+#
+# IMPORTANT: the KEYS of `groups`, `measures` and `blocks` are data values from
+# the freeze and must stay exactly as the data spells them. Only the VALUES are
+# display text.
+STR <- list(
+  ## ---- shared ----
+  groups = list(
+    en = c(
+      Athlete = "Athlete",
+      Enthusiast = "Enthusiast",
+      Active = "Active",
+      Moving = "Moving",
+      `Non-athlete` = "Non-athlete",
+      Discontinued = "Discontinued"
+    ),
+    cs = c(
+      Athlete = "Atletky",
+      Enthusiast = "Nadšenkyně",
+      Active = "Aktivní",
+      Moving = "Hýbající se",
+      `Non-athlete` = "Necvičící",
+      Discontinued = "Bývalé sp."
+    )
+  ),
+  a2pa_identity = list(
+    en = "A2PA identity",
+    cs = "A2PA identita"
+  ),
+
+  ## ---- 1. sample table ----
+  s1_cols = list(
+    en = c(N = "N", Age = "Age", Edu = "Higher<br>education", MMSE = "MMSE"),
+    cs = c(N = "N", Age = "Věk", Edu = "Vzdělání*", MMSE = "MMSE")
+  ),
+  s1_sample = list(
+    en = "**Sample**  \n    Women aged over 80, free of cognitive or functional impairment. %d assessed in total. Age and MMSE presented as M (SD) in years and points out of 30, respectively.",
+    cs = "**Vzorek**  \n    Ženy starší 80 let bez kognitivního nebo funkčního postižení. Celkem vyšetřeno %d žen. Věk a MMSE jsou prezentovány jako průměr (sm. odchylka) v letech/bodech z 30. *procento žen s maturitou či vyšším vzděláním."
+  ),
+  s1_excluded = list(
+    en = "**Excluded**  \n    The %d least active identities (grey) are too sparse for stratum-level estimates and are left out of every analysis, leaving *N* = %d.",
+    cs = "**Vyloučeno**  \n    %d nejméně aktivní identity (šedě) tvoří kategorii necvičících. Tyto identity obsahují pro odhady na úrovni skupin příliš málo participantek a byly vynechány z analýz. Konečné *N* = %d. Bývalé sp. = bývalé sportovkyně."
+  ),
+  s1_measures = list(
+    en = c(
+      "<strong>Measures</strong><br>",
+      "&#127939;&#8205;&#9792;&#65039; <em>Physical activity</em>: COBRA-B, scored at three nested definitions.<br>",
+      "&#129504; <em>Cognition</em>: RAVLT delayed recall, TMT-B, BNT-30, animal naming; SuperAging by Northwestern criteria.<br>",
+      "&#128203; <em>Health</em>: <em>mental</em> GDS-15, GAI, FAQ &middot; <em>subjective</em> self-rated health &middot; <em>metabolic</em> BMI, smoking, alcohol, diabetes, hypertension."
+    ),
+    cs = c(
+      "<strong>Metody</strong><br>",
+      "&#127939;&#8205;&#9792;&#65039; <em>Pohybová aktivita</em>: COBRA-B, skórováno na třech úrovních.<br>",
+      "&#129504; <em>Kognice</em>: RAVLT oddálené vybavení, TMT-B, BNT-30, verbální fluence (zvířata); SuperAging podle Northwesternských kritérií.<br>",
+      "&#128203; <em>Zdraví</em>: <em>duševní</em> GDS-15, GAI, FAQ &middot; <em>subjektivní</em> subjektivní zdraví &middot; <em>civilizační</em> BMI, kouření, alkohol, diabetes, hypertenze."
+    )
+  ),
+
+  ## ---- 2. activity ladder ----
+  # Strip text clips rather than wraps: keep every line under about 20
+  # characters at 24 pt bold, in BOTH languages.
+  r1_facets = list(
+    en = c(
+      "WHO-recommended\nphysical activity",
+      "Any PA excluding\nwalking and chores",
+      "Any PA excluding\nthose plus gardening"
+    ),
+    cs = c(
+      "Doporučená úroveň\npodle WHO",
+      "Pohyb nad rámec chůze \na domácích prací",
+      "Pohyb navíc i bez\nzahradničení"
+    )
+  ),
+  r1_ylab = list(
+    en = "% of group meeting the criterion",
+    cs = "% účastnic splňující kritérium"
+  ),
+  r1_finding = list(
+    en = "**A2PA identity indicates what the women do, not how much.** Meeting the WHO-recommended level does not separate the groups (%s); doing any activity beyond walking and chores does (%s), and excluding gardening widens the gap (%s).",
+    cs = "**A2PA vypovídá o tom, co ženy dělají, nikoliv jak intenzivně.** Splnění doporučené úrovně aktivity dle WHO skupiny neodlišuje (%s); pohyb nad rámec chůze a domácích prací ano (%s) a vyloučení zahradničení tento rozdíl dále navyšuje (%s)."
+  ),
+  r1_how = list(
+    en = "All three panels score the same %d women. The WHO criterion counts at least 2.5 h/week of moderate or vigorous activity of any type; the other two count any amount at any intensity, of a narrowing list of types. Dots are proportions, bars 95%% Wilson intervals, axis truncated at %d%%. Smallest expected count is %s, in the middle panel.",
+    cs = "Všechny tři panely hodnotí stejných %d žen. Doporučení WHO zahrnuje alespoň 2,5 h aktivity střední nebo vyšší intenzity jakéhokoli typu týdně; zbývající dvě kritéria zahrnují jakékoli množství aktivity při jakékoli intenzitě, ze zužujícího se výčtu druhů aktivity. Tvary jsou podíly žen splňující dané kritérium, úsečky 95%% Wilsonovy intervaly."
+  ),
+
+  ## ---- 3. cognition ----
+  r2_domains = list(
+    en = c("Delayed recall", "TMT-B", "BNT-30", "Animal naming"),
+    cs = c("RAVLT", "TMT-B", "BNT-30", "VF (zvířata)")
+  ),
+  r2_sa = list(
+    en = "SuperAging",
+    cs = "SuperAging"
+  ),
+  r2_diff = list(
+    en = "Pairwise difference (pp)",
+    cs = "Rozdíl mezi skupinami (p. b.)"
+  ),
+  r2_ylab = list(
+    en = "Domain z score",
+    cs = "z-skór"
+  ),
+  r2_finding = list(
+    en = "**Enthusiasts reach SuperAging about twice as often, courtesy of their superior memory.** Prevalence differs between groups (%s) and delayed recall separates them (%s); the other three domains do not (all *p* > %s).",
+    cs = "**Nadšenkyně jsou SuperAgerkami zhruba dvakrát častěji, a to díky lepší epizodické paměti.** Prevalence SA se mezi skupinami liší (%s). Skupiny se odlišují v oddáleném vybavení (%s), ve zbývajících třech doménách nikoli (všechna *p* > %s)."
+  ),
+  r2_how = list(
+    en = "Prevalence differences (top right) carry %.1f%% intervals, Bonferroni adjusted, so a filled mark excludes zero. Violins are z-score distributions, dot the mean, bar its 95%% CI; coloured values are Tukey contrasts of Enthusiasts against that group. SuperAging is defined *by* these four domains, so the lower row explains the upper rather than confirming it. SuperAging was determinable for %d of %d women; domain scores for %s.",
+    cs = "Rozdíly prevalence (vpravo nahoře) ukazují %.1f%% intervaly s Bonferroniho korekcí. Houslové grafy ukazují rozdělení z-skórů, geometrické obrazce průměr, úsečka jeho 95%% CI. Barevné hodnoty jsou Tukeyho kontrasty nadšenkyň vůči zbylým skupinám. SuperAging bylo možné určit u %d z %d žen; skóry domén u %s."
+  ),
+  r2_ndom = list(
+    en = "%d to %d depending on domain",
+    cs = "%d až %d"
+  ),
+
+  ## ---- 4. health table ----
+  measures = list(
+    en = c(
+      "GDS-15" = "GDS-15", "GAI-SF" = "GAI-SF", "FAQ" = "FAQ",
+      "Subj. health" = "Subj. health",
+      "Mental activities" = "Mental activities",
+      "BMI" = "BMI", "Hypertension" = "Hypertension", "Diabetes" = "Diabetes", "Smoking" = "Smoking", "Alcohol" = "Alcohol"
+    ),
+    cs = c(
+      "GDS-15" = "GDS-15", "GAI-SF" = "GAI-SF", "FAQ" = "FAQ",
+      "Subj. health" = "Subj. zdraví",
+      "Mental activities" = "Mentální aktivity",
+      "BMI" = "BMI", "Hypertension" = "Hypertenze", "Diabetes" = "Diabetes", "Smoking" = "Kouření", "Alcohol" = "Alkohol"
+    )
+  ),
+  blocks = list(
+    en = c(
+      "Mental health" = "Mental health",
+      "Subjective health" = "Subjective health",
+      "Mental activity" = "Mental activity",
+      "Metabolic and lifestyle risk" = "Metabolic and lifestyle risk"
+    ),
+    cs = c(
+      "Mental health" = "Duševní zdraví",
+      "Subjective health" = "Subjektivní zdraví",
+      "Mental activity" = "Mentální aktivita",
+      "Metabolic and lifestyle risk" = "Civilizační choroby a životospráva"
+    )
+  ),
+  r3_test = list(
+    en = "Test",
+    cs = "Test"
+  ),
+  r3_fn_eta = list(
+    en = "&eta;<sup>2</sup>: the share of that measure's variance accounted for by identity.",
+    cs = "&eta;<sup>2</sup>: podíl rozptylu dané proměnné vysvětlený A2PA identitou."
+  ),
+  r3_fn_test = list(
+    en = "One-way ANOVA (continuous variables) or &chi;<sup>2</sup> (binary variables), one per row, unadjusted for multiple comparisons.",
+    cs = "Jednofaktorová ANOVA (spojité proměnné) nebo &chi;<sup>2</sup> (binární proměnné), jeden test na řádek, bez korekce na mnohonásobná srovnání."
+  ),
+  r3_fn_cells = list(
+    en = "M (SD) for continuous measures, n (%) for yes/no ones.",
+    cs = "Průměr (sm. odchylka) pro spojité míry, n (%) pro binární."
+  ),
+  r3_headline = list(
+    en = "**The groups are mostly comparable across health measures.**",
+    cs = "**Skupiny jsou napříč ukazateli zdraví převážně srovnatelné.**"
+  ),
+  r3_none = list(
+    en = "None of the %s measures differs significantly across the three identities (all *p* > %s).",
+    cs = "Žádný z %s ukazatelů se mezi třemi identitami významně neliší (všechna *p* > %s)."
+  ),
+  # Positional (%1$s ...) because the two languages put the verb and the list of
+  # measure names in the opposite order. Slots, in both: 1 total, 2 names,
+  # 3 verb, 4 p values, 5 count of nulls, 6 negated verb, 7 plural suffix for
+  # "p", 8 smallest null p.
+  r3_some = list(
+    en = "Of the %1$s measures, %2$s %3$s significantly between the identities (%4$s); the other %5$s %6$s not (*p*%7$s > %8$s).",
+    cs = "Z %1$s ukazatelů se mezi identitami významně %3$s %2$s (%4$s); zbývajících %5$s se %6$s (*p*%7$s > %8$s)."
+  ),
+  # Czech `lisi se` is the same form in the singular and the plural, and Czech
+  # has no plural "p"s, so those slots collapse.
+  r3_verb = list(
+    en = c(sg = "differs", pl = "differ"),
+    cs = c(sg = "liší",    pl = "liší")
+  ),
+  r3_aux = list(
+    en = c(sg = "does",   pl = "do"),
+    cs = c(sg = "neliší", pl = "neliší")
+  ),
+  r3_ps = list(
+    en = c(sg = "", pl = "s"),
+    cs = c(sg = "", pl = "")
+  ),
+  r3_denoms = list(
+    en = "Of %d women, %s contributed to each measure.",
+    cs = "Z %d žen přispělo k porovnáním %s dle proměnné."
+  ),
+  r3_all_n = list(en = "all %d",   cs = "všech %d"),
+  r3_range = list(en = "%d to %d", cs = "%d až %d"),
+  and      = list(en = "and",      cs = "a")
+)
+
+# Czech strings I invented rather than lifted from the poster or the published
+# instrument. They are complete enough to knit, so the validator cannot catch
+# them; this list is the reminder.
+PROVISIONAL <- c("groups", "blocks", "r1_facets")
+```
+
+```{r language-helpers}
+tr <- function(key, lang = LANG) {
+  if (is.null(STR[[key]])) {
+    stop("No string keyed '", key, "' in STR.", call. = FALSE)
+  }
+  v <- STR[[key]][[lang]]
+  if (is.null(v)) {
+    stop("String '", key, "' has no '", lang, "' translation.", call. = FALSE)
+  }
+  v
+}
+
+# Small-number words. English spells them out; Czech numerals decline with the
+# case the sentence puts them in, so digits are used rather than a wrong ending.
+numword <- function(n) {
+  if (LANG == "en") as.character(english::english(n)) else as.character(n)
+}
+
+# Lower-case the first letter only when the rest of the label is plain text.
+# A blind tolower() turns "GDS-15" into "gds-15" and "BMI" into "bmi".
+lc1 <- function(x) {
+  plain <- !grepl("[A-Z0-9]", substring(x, 2))
+  ifelse(plain, paste0(tolower(substr(x, 1, 1)), substring(x, 2)), x)
+}
+
+# Display labels, keyed by the data's own spelling.
+A2PA_LAB  <- tr("groups")
+VAR_LAB   <- tr("measures")
+BLOCK_LAB <- tr("blocks")
+```
+
+```{r language-check, echo = FALSE}
+LANGS <- c("en", "cs")
+
+gaps <-
+  tidyr::expand_grid(key = names(STR), lang = LANGS) |>
+  mutate(
+    ok = map2_lgl(key, lang, \(k, l) {
+      v <- STR[[k]][[l]]
+      !is.null(v) && length(v) > 0 && !anyNA(v)
+    }),
+    # Vector-valued entries must have the same length in every language, or a
+    # facet label would silently go missing when the language changes.
+    n = map2_int(key, lang, \(k, l) length(STR[[k]][[l]]))
+  )
+
+bad_len <- gaps |> summarise(n = n_distinct(n), .by = key) |> filter(n > 1)
+
+if (any(!gaps$ok) || nrow(bad_len)) {
+  stop(
+    "Dictionary is incomplete.\n",
+    if (any(!gaps$ok)) paste0(
+      "  missing: ",
+      paste(sprintf("%s[%s]", gaps$key[!gaps$ok], gaps$lang[!gaps$ok]),
+            collapse = ", "), "\n"
+    ),
+    if (nrow(bad_len)) paste0(
+      "  length differs between languages: ",
+      paste(bad_len$key, collapse = ", "), "\n"
+    ),
+    call. = FALSE
+  )
+}
+
+message(
+  "Dictionary complete for: ", paste(LANGS, collapse = ", "),
+  ". Building in '", LANG, "'."
+)
+```
+
+---
+
 # 1 · The sample (row 1, column 2)
 
 ```{r sample-palette}
@@ -108,6 +399,11 @@ sample_rows <-
   arrange(A2PA) |>
   mutate(A2PA = as.character(A2PA))
 
+# Display names for the identities. A level the dictionary does not know would
+# otherwise become NA in the first column and never be noticed.
+stopifnot(all(sample_rows$A2PA %in% names(A2PA_LAB)))
+sample_rows$A2PA <- unname(A2PA_LAB[sample_rows$A2PA])
+
 # Accent per row: palette for the analysed levels, grey for the rest.
 n_keep <- length(pal)
 accent <- c(unname(pal), rep(grey, nrow(sample_rows) - n_keep))
@@ -121,13 +417,13 @@ tab_sample <-
   sample_rows |>
   gt::gt() |>
   gt::cols_label(
-    A2PA = "A2PA identity",
-    N    = "N",
-    Age  = "Age",
+    A2PA = tr("a2pa_identity"),
+    N    = tr("s1_cols")[["N"]],
+    Age  = tr("s1_cols")[["Age"]],
     # Two lines, so the column names itself and needs no note to explain what
     # the percentage is of.
-    Edu  = gt::html("Higher<br>education"),
-    MMSE = "MMSE"
+    Edu  = gt::html(tr("s1_cols")[["Edu"]]),
+    MMSE = tr("s1_cols")[["MMSE"]]
   ) |>
   gt::cols_align("left",  columns = A2PA) |>
   gt::cols_align("center", columns = c(N, Age, Edu, MMSE)) |>
@@ -170,27 +466,13 @@ for (i in seq_len(nrow(sample_rows))) {
 
 tab_sample <-
   tab_sample |>
+  gt::tab_source_note(gt::md(sprintf(tr("s1_sample"), nrow(raw_data)))) |>
   gt::tab_source_note(gt::md(sprintf(
-    "**Sample**  
-    Women aged over 80, free of cognitive or functional impairment. %d assessed in total. Age and MMSE presented as M (SD) in years and points out of 30, respectively.",
-    nrow(raw_data)
-  ))) |>
-  gt::tab_source_note(gt::md(sprintf(
-    "**Excluded**  
-    The %d least active identities (grey) are too sparse for stratum-level estimates and are left out of every analysis, leaving *N* = %d.",
-    nrow(sample_rows) - n_keep, nrow(df)
+    tr("s1_excluded"), nrow(sample_rows) - n_keep, nrow(df)
   ))) |>
   # html() rather than md() here: this note needs line breaks and inline markup
   # together, and raw HTML in a markdown note is not guaranteed to survive.
-  gt::tab_source_note(gt::html(paste0(
-    "<strong>Measures</strong><br>",
-    "&#127939; <em>Physical activity</em>: COBRA-B, scored at three nested definitions.<br>",
-    "&#129504; <em>Cognition</em>: RAVLT delayed recall, TMT-B, BNT-30, animal naming; ",
-    "SuperAging by Northwestern criteria.<br>",
-    "&#129658; <em>Health</em>: <em>mental</em> GDS-15, GAI, FAQ &middot; ",
-    "<em>subjective</em> self-rated health &middot; ",
-    "<em>metabolic</em> BMI, smoking, alcohol, diabetes, hypertension."
-  ))) |>
+  gt::tab_source_note(gt::html(paste0(tr("s1_measures"), collapse = ""))) |>
   gt::tab_options(
     table.font.names               = "Helvetica Neue",
     # gt centres a table that is narrower than its container; with the export
@@ -233,13 +515,9 @@ pa_levels <- c(
 # NOTE: WHO is the demanding criterion: it needs BOTH moderate-or-intense
 # intensity AND >= 2.5 h/week. The other two need only > 0 hours, at any
 # intensity of a progressively narrower list of activity types.
-pa_label <- c(
-  "WHO-recommended\nphysical activity",
-  "Any PA excluding\nwalking and chores",
-  # NOTE: strip text does not wrap, it clips. At this facet width 24 pt bold
-  # fits about 20 characters per line, so both lines are kept under that.
-  "Any PA excluding\nthose plus gardening"
-)
+# NOTE: strip text does not wrap, it clips. At this facet width 24 pt bold fits
+# about 20 characters per line, in every language.
+pa_label <- tr("r1_facets")
 
 ladder <-
   df |>
@@ -296,31 +574,13 @@ ladder_band <-
   filter(p_chi < .05) |>
   transmute(label = factor(pa_label[m_i], levels = pa_label))
 
-ladder_finding <- sprintf(
-  paste(
-    "**A2PA identity indicates what the women do, not how much.**",
-    "Meeting the WHO-recommended level does not separate the groups (%s);",
-    "doing any activity beyond walking and chores does (%s),",
-    "and excluding gardening widens the gap (%s)."
-  ),
-  fmt_x2(1),
-  fmt_x2(2),
-  fmt_x2(3)
-)
+ladder_finding <- sprintf(tr("r1_finding"), fmt_x2(1), fmt_x2(2), fmt_x2(3))
 
 ladder_how <- sprintf(
-  paste(
-    "All three panels score the same %d women. The WHO criterion counts at least",
-    "2.5 h/week of moderate or vigorous activity of any type; the other two count",
-    "any amount at any intensity, of a narrowing list of types. Dots are",
-    "proportions, bars 95%% Wilson intervals, axis truncated at %d%%. Smallest",
-    "expected count is %s, in the middle panel; Fisher's exact test agrees there",
-    "(*p* = %s)."
-  ),
+  tr("r1_how"),
   sum(ladder$n[ladder$m_i == 1]),
   Y0,
-  no0(ladder_tests$min_exp[2], 1),
-  no0(ladder_tests$p_fish[2], 3)
+  no0(ladder_tests$min_exp[2], 1)
 )
 
 p_ladder <-
@@ -366,18 +626,10 @@ p_ladder <-
     ~ label,
     nrow = 1
   ) +
-  scale_colour_manual(
-    values = pal,
-    name = NULL
-  ) +
-  scale_fill_manual(
-    values = pal,
-    name = NULL
-  ) +
-  scale_shape_manual(
-    values = SHP,
-    name = NULL
-  ) +
+  # All three scales carry the same labels, or ggplot splits the merged legend.
+  scale_colour_manual(values = pal, labels = A2PA_LAB, name = NULL) +
+  scale_fill_manual(  values = pal, labels = A2PA_LAB, name = NULL) +
+  scale_shape_manual( values = SHP, labels = A2PA_LAB, name = NULL) +
   # Wider padding pulls the three markers toward the middle of their facet: with
   # 3 categories the spacing is 1 unit out of (2 + 2 * add), so raising `add`
   # tightens the group.
@@ -392,7 +644,7 @@ p_ladder <-
   ) +
   labs(
     x = NULL,
-    y = "% of group meeting the criterion",
+    y = tr("r1_ylab"),
     caption = paste(ladder_finding, ladder_how)
   ) +
   # colour, fill and shape all map to A2PA, so ggplot merges them into one
@@ -409,8 +661,8 @@ p_ladder <-
     panel.grid.minor   = element_blank(),
     panel.grid.major.y = element_line(colour = hair, linewidth = 0.4),
     panel.spacing.x    = unit(26, "pt"),
-    strip.text   = element_text(
-      size = 24,
+    strip.text = element_text(
+      size = 20,
       face = "bold",
       colour = ink,
       lineheight = 1.15,
@@ -439,8 +691,12 @@ p_ladder <-
     plot.caption.position = "plot",
     # Wrapping caption, following the ECVP builder's two-tier convention.
     plot.caption = ggtext::element_textbox_simple(
-      size = 19, colour = grey, family = FAM, lineheight = 1.25,
-      margin = margin(t = 14), halign = 0
+      size = 19,
+      colour = grey,
+      family = FAM,
+      lineheight = 1.25,
+      margin = margin(t = 14),
+      halign = 0
     ),
     plot.margin = margin(6, 10, 4, 4)
   )
@@ -458,7 +714,7 @@ p_ladder
 ## ---- r cognition-data ----
 # The four domains that define SuperAging. Memory first: it is the finding.
 z_levels <- c("z(RAVLT-DR)", "z(TMT-B)", "z(BNT-30)", "z(Animal naming)")
-z_label  <- c("Delayed recall", "TMT-B", "BNT-30", "Animal naming")
+z_label  <- tr("r2_domains")
 
 domains <-
   df |>
@@ -563,7 +819,7 @@ sa_pairs <- data.frame(
   b = c("Athlete", "Active", "Active")
 ) |>
   mutate(
-    lab = paste(a, "-", b),
+    lab = paste(A2PA_LAB[a], "-", A2PA_LAB[b]),
     d   = map2_dbl(a, b, \(a, b) {
       i <- match(c(a, b), sa$A2PA)
       100 * (sa$k[i[1]] / sa$n[i[1]] - sa$k[i[2]] / sa$n[i[2]])
@@ -630,7 +886,7 @@ p_sa <-
   labs(
     x = NULL,
     y = NULL,
-    subtitle = "SuperAging"
+    subtitle = tr("r2_sa")
   ) +
   theme_minimal(
     base_size = 24,
@@ -690,7 +946,7 @@ p_sa_diff <-
   labs(
     x = NULL,
     y = NULL,
-    subtitle = "Pairwise difference (pp)"
+    subtitle = tr("r2_diff")
   ) +
   theme_minimal(
     base_size = 24,
@@ -750,9 +1006,9 @@ p_dom <-
   geom_point(
     data = domain_mean,
     aes(y = m, fill = A2PA, shape = A2PA),
-    size = 7,
+    size = 5,
     colour = "white",
-    stroke = 1.6
+    stroke = 0.5
   ) +
   # Memory facet only, so this needs its own facet key: annotate() ignores
   # `data` and would repeat the labels in all four panels.
@@ -770,25 +1026,16 @@ p_dom <-
     ~ domain,
     nrow = 1
   ) +
-  scale_colour_manual(
-    values = pal,
-    name = NULL
-  ) +
-  scale_fill_manual(
-    values = pal,
-    name = NULL
-  ) +
-  scale_shape_manual(
-    values = SHP,
-    name = NULL
-  ) +
+  scale_colour_manual(values = pal, labels = A2PA_LAB, name = NULL) +
+  scale_fill_manual(  values = pal, labels = A2PA_LAB, name = NULL) +
+  scale_shape_manual( values = SHP, labels = A2PA_LAB, name = NULL) +
   # One z unit of floor for the two p values; the rest is violin.
   scale_y_continuous(
     expand = expansion(mult = c(0.02, 0.05), add = c(1, 0))
   ) +
   labs(
     x = NULL,
-    y = "Domain z score"
+    y = tr("r2_ylab")
   ) +
   guides(
     colour = guide_legend(override.aes = list(size = 9, stroke = 1.8, alpha = 1))
@@ -822,12 +1069,7 @@ p_dom <-
   )
 
 cog_finding <- sprintf(
-  paste(
-    "**Enthusiasts reach SuperAging about twice as often,",
-    "courtesy of their superior memory.**",
-    "Prevalence differs between groups (%s) and delayed recall separates them (%s);",
-    "the other three domains do not (all *p* > %s)."
-  ),
+  tr("r2_finding"),
   sprintf(
     "&#967;<sup>2</sup>(%d) = %s, %s",
     sa_test$parameter,
@@ -843,19 +1085,12 @@ cog_finding <- sprintf(
 n_dom <- range(summarise(domain_mean, n = sum(n), .by = domain)$n)
 
 cog_how <- sprintf(
-  paste(
-    "Violins are z-score distributions, dot the mean, bar its 95%% CI; coloured",
-    "values are Tukey contrasts of Enthusiasts against that group. Prevalence",
-    "differences (top right) carry %.1f%% intervals, Bonferroni adjusted, so a",
-    "filled mark excludes zero. SuperAging is defined *by* these four domains, so",
-    "the lower row explains the upper rather than confirming it. SuperAging was",
-    "determinable for %d of %d women; domain scores for %s."
-  ),
+  tr("r2_how"),
   100 * CL,
   sum(sa$n),
   nrow(df),
   if (n_dom[1] == n_dom[2]) sprintf("%d", n_dom[1])
-  else sprintf("%d to %d depending on domain", n_dom[1], n_dom[2])
+  else sprintf(tr("r2_ndom"), n_dom[1], n_dom[2])
 )
 
 p_cognition <-
@@ -918,6 +1153,8 @@ to01 <- function(x) {
     as.integer(as.character(x))
   } else if (all(tolower(u) %in% c("no", "yes"))) {
     as.integer(tolower(as.character(x)) == "yes")
+  } else if (all(tolower(u) %in% c("ne", "ano"))) {
+    as.integer(tolower(as.character(x)) == "ano")
   } else {
     stop("Unrecognised binary coding: ", paste(u, collapse = "/"), call. = FALSE)
   }
@@ -1005,9 +1242,11 @@ tab_rows <-
     by = "var"
   ) |>
   arrange(var) |>
+  # Keys become display labels only here, at the last possible moment: every
+  # select(), factor() and join above still runs on the data's own spelling.
   mutate(
-    block = as.character(block),
-    var = as.character(var)
+    block = unname(BLOCK_LAB[as.character(block)]),
+    var   = unname(VAR_LAB[as.character(var)])
   ) |>
   select(
     block,
@@ -1027,11 +1266,11 @@ grp_n <-
 # The headline is a claim and is written by hand; it must be re-checked against
 # the numbers whenever the freeze changes. Everything after it is generated, so
 # the sentence cannot contradict the table.
-HEADLINE <- "**The groups are mostly comparable across health measures.**"
+HEADLINE <- tr("r3_headline")
 
 andify <- function(x) {
   if (length(x) <= 1) return(paste(x, collapse = ""))
-  paste(paste(x[-length(x)], collapse = ", "), "and", x[length(x)])
+  paste(paste(x[-length(x)], collapse = ", "), tr("and"), x[length(x)])
 }
 
 sig_i  <- order(health_tests$p)[seq_len(sum(health_tests$sig))]
@@ -1040,21 +1279,19 @@ null_p <- health_tests$p[!health_tests$sig]
 health_finding <- paste(
   HEADLINE,
   if (length(sig_i) == 0) {
-    sprintf(
-      "None of the %s measures differs significantly across the three identities (all *p* > %s).",
-      english(nrow(health_tests)),
-      no0(min(null_p), 2)
-    )
+    sprintf(tr("r3_none"), numword(nrow(health_tests)), no0(min(null_p), 2))
   } else {
+    one_sig  <- length(sig_i) == 1
+    one_null <- length(null_p) == 1
     sprintf(
-      "Of the %s measures, %s %s significantly between the identities (%s); the other %s %s not (*p*%s > %s).",
-      english(nrow(health_tests)),
-      andify(as.character(tolower(health_tests$var[sig_i]))),
-      if (length(sig_i) == 1) "differs" else "differ",
+      tr("r3_some"),
+      numword(nrow(health_tests)),
+      andify(lc1(unname(VAR_LAB[as.character(health_tests$var[sig_i])]))),
+      tr("r3_verb")[[if (one_sig) "sg" else "pl"]],
       paste(gsub("^p", "*p*", health_tests$lab[sig_i]), collapse = "; "),
-      english(length(null_p)),
-      if (length(null_p) == 1) "does" else "do",
-      if (length(null_p) == 1) "" else "s",
+      numword(length(null_p)),
+      tr("r3_aux")[[if (one_null) "sg" else "pl"]],
+      tr("r3_ps")[[if (one_null) "sg" else "pl"]],
       no0(min(null_p), 2)
     )
   }
@@ -1063,7 +1300,7 @@ health_finding <- paste(
 ## ---- r health-table-gt ----
 lbl <- function(g) gt::html(sprintf(
   "%s<br><span style='font-size:18px;font-weight:600;text-transform:none'>n = %d</span>",
-  g, grp_n[[g]]
+  A2PA_LAB[[g]], grp_n[[g]]
 ))
 
 tab_health <-
@@ -1076,13 +1313,13 @@ tab_health <-
     Enthusiast = lbl("Enthusiast"),
     Active = lbl("Active"),
     eta = gt::html("<span style='text-transform:none'>&eta;<sup>2</sup></span>"),
-    lab = "Test"
+    lab = tr("r3_test")
   ) |>
   gt::cols_align("left", columns = var) |>
   gt::cols_align("center", columns = c(all_of(names(pal)), eta, lab)) |>
   # One spanner over the three identity columns, which carries the colour rule
   # and the M (SD) / n (%) footnote
-  gt::tab_spanner(label = "A2PA identity", columns = all_of(names(pal))) |>
+  gt::tab_spanner(label = tr("a2pa_identity"), columns = all_of(names(pal))) |>
   # Measure names sit inside their block. cell_text(indent =) needs gt >= 0.9;
   # on an older gt, drop this call and pad the strings instead.
   gt::tab_style(
@@ -1124,31 +1361,24 @@ tab_health <-
     locations = gt::cells_body(rows = which(tab_rows$sig))
   ) |>
   gt::tab_source_note(gt::md(sprintf(
-    "%s Of %d women, %s contributed to each measure.",
-    health_finding, nrow(df),
-    local({
+    "%s %s", health_finding,
+    sprintf(tr("r3_denoms"), nrow(df), local({
       r <- range(health_n$n)
-      if (r[1] == r[2]) sprintf("all %d", r[1])
-      else sprintf("%d to %d", r[1], r[2])
-    })
+      if (r[1] == r[2]) sprintf(tr("r3_all_n"), r[1])
+      else sprintf(tr("r3_range"), r[1], r[2])
+    }))
   ))) |>
   gt::tab_footnote(
-    footnote = gt::html(paste(
-      "&eta;<sup>2</sup>: the share of that measure's",
-      "variance accounted for by identity."
-    )),
+    footnote = gt::html(tr("r3_fn_eta")),
     locations = gt::cells_column_labels(columns = eta)
   ) |>
   gt::tab_footnote(
-    footnote  = gt::html(paste(
-      "One-way ANOVA (continuous variables) or &chi;<sup>2</sup> (binary variables),",
-      "one per row, unadjusted for multiple comparisons."
-    )),
+    footnote  = gt::html(tr("r3_fn_test")),
     locations = gt::cells_column_labels(columns = lab)
   ) |>
   gt::tab_footnote(
-    footnote  = gt::html("M (SD) for continuous measures, n (%) for yes/no ones."),
-    locations = gt::cells_column_spanners(spanners = "A2PA identity")
+    footnote  = gt::html(tr("r3_fn_cells")),
+    locations = gt::cells_column_spanners(spanners = tr("a2pa_identity"))
   ) |>
   gt::tab_options(
     table.font.names                  = "Helvetica Neue",
@@ -1197,6 +1427,19 @@ tab_health
 | `panel-r2-cognition` | R2 · cognition | 1298, 1501 |
 | `panel-r3-health` | R3 · health | 148, 2425 |
 
+```{r caption-lengths, echo = FALSE}
+# Czech runs longer than English for the same sentence, and a caption is the one
+# thing in a panel that grows without complaining: ggtext simply takes the room
+# out of the plot. This is the early warning; panel size itself is checked in
+# export-verify.
+tibble::tibble(
+  panel = c("R1 activity", "R2 cognition"),
+  chars = c(nchar(paste(ladder_finding, ladder_how)),
+            nchar(paste(cog_finding, cog_how)))
+) |>
+  mutate(lines_at_19pt = ceiling(chars / 98))
+```
+
 ```{r export-spec}
 # Panel slot in the A0 template, in points. The sheet is 2383 x 3370 pt and each
 # of the six panels has a 937 x 791 pt picture area beneath its title bar.
@@ -1212,7 +1455,8 @@ ZOOM <- 4
 # gt tables as vector PDF
 TABLE_PDF <- TRUE
 
-OUT_DIR <- here::here("outputs", "2026-psychologicke-dny-poster", "panels")
+# Per language, so an English run never overwrites a Czech one.
+OUT_DIR <- here::here("outputs", "2026-psychologicke-dny-poster", "panels", LANG)
 dir.create(OUT_DIR, showWarnings = FALSE, recursive = TRUE)
 ```
 
